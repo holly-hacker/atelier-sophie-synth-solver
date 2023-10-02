@@ -1,0 +1,236 @@
+use synth_brute::*;
+
+macro_rules! tiles {
+    ($($color:ident:$level:expr,)*) => {
+        vec![
+            $(tile!($color:$level),)*
+        ]
+    };
+}
+
+macro_rules! tile {
+    ($color:ident:$level:expr) => {
+        Some(Tile {
+            color: Color::$color,
+            level: $level,
+            played_color: None,
+        })
+    };
+    (None 0) => {
+        None
+    };
+}
+
+fn main() {
+    println!("Hello, world!");
+    let items = get_input_items();
+    let mut playfield = get_test_playfield();
+    print_playfield(&playfield);
+    println!();
+
+    let mut scores = vec![ColorScoreSet::default(); items.len()];
+
+    let placement1 = Placement {
+        index: 2 + 5,
+        transformations: (),
+    };
+    *scores[0].get_mut(items[0][0].color) += playfield.place(&items, (0, 0), placement1);
+    print_playfield_coverage(&playfield);
+    print_playfield(&playfield);
+    println!();
+
+    let placement2 = Placement {
+        index: 1 + 5 * 3,
+        transformations: (),
+    };
+    *scores[1].get_mut(items[1][0].color) += playfield.place(&items, (1, 0), placement2);
+    print_playfield_coverage(&playfield);
+    print_playfield(&playfield);
+    println!();
+
+    let placement3 = Placement {
+        index: 3 + 5 * 2,
+        transformations: (),
+    };
+    *scores[2].get_mut(items[2][0].color) += playfield.place(&items, (2, 0), placement3);
+    print_playfield_coverage(&playfield);
+    print_playfield(&playfield);
+    println!();
+
+    let placement4 = Placement {
+        index: 0,
+        transformations: (),
+    };
+    *scores[0].get_mut(items[0][1].color) += playfield.place(&items, (0, 1), placement4);
+    print_playfield_coverage(&playfield);
+    print_playfield(&playfield);
+    println!();
+
+    println!("gained scores: {:?}", scores);
+    let coverage = playfield.calculate_coverage();
+    let final_scores = items
+        .iter()
+        .zip(scores.iter())
+        .map(|(item_group, score_set)| {
+            score_set
+                .into_iter()
+                .map(|(color, color_score)| {
+                    let base = item_group
+                        .iter()
+                        .filter(|i| i.color == color)
+                        .map(|i| i.quality)
+                        .sum::<usize>();
+                    let ratio = coverage.get_color_ratio_conditional(color, &playfield);
+                    (base + color_score) as f32 * (1. + ratio)
+                })
+                .sum::<f32>()
+        })
+        .map(|num| num as usize)
+        .collect::<Vec<_>>();
+    println!("final scores: {:?}", final_scores);
+}
+
+fn print_playfield(playfield: &Playfield) {
+    use owo_colors::{OwoColorize, Style};
+
+    for row in 0..playfield.width {
+        for col in 0..playfield.width {
+            let tile = playfield.get_tile((row, col));
+            let Some(tile) = tile else {
+                print!(" ");
+                continue;
+            };
+
+            let mut style = Style::new();
+
+            match tile.color {
+                Color::Red => style = style.red(),
+                Color::Blue => style = style.blue(),
+                Color::Green => style = style.green(),
+                Color::Yellow => style = style.yellow(),
+                Color::White => style = style.white(),
+            }
+
+            match tile.played_color {
+                Some(Color::Red) => style = style.on_truecolor(128, 32, 32),
+                Some(Color::Blue) => style = style.on_truecolor(32, 32, 128),
+                Some(Color::Green) => style = style.on_truecolor(32, 128, 32),
+                Some(Color::Yellow) => style = style.on_truecolor(128, 128, 32),
+                Some(Color::White) => style = style.on_truecolor(128, 128, 128),
+                None => (),
+            }
+
+            print!("{}", tile.level.style(style));
+        }
+        println!();
+    }
+}
+
+fn print_playfield_coverage(playfield: &Playfield) {
+    use owo_colors::OwoColorize;
+    let coverage = playfield.calculate_coverage();
+    println!(
+        "Coverage: {} {} {} {} {}",
+        format!(
+            "{}%",
+            100. * coverage.get_color_ratio(Color::Red, playfield)
+        )
+        .red(),
+        format!(
+            "{}%",
+            100. * coverage.get_color_ratio(Color::Blue, playfield)
+        )
+        .blue(),
+        format!(
+            "{}%",
+            100. * coverage.get_color_ratio(Color::Green, playfield)
+        )
+        .green(),
+        format!(
+            "{}%",
+            100. * coverage.get_color_ratio(Color::Yellow, playfield)
+        )
+        .yellow(),
+        format!(
+            "{}%",
+            100. * coverage.get_color_ratio(Color::White, playfield)
+        )
+        .white(),
+    );
+}
+
+fn get_test_playfield() -> Playfield {
+    Playfield {
+        width: 5,
+        #[rustfmt::skip]
+        data: tiles![
+            Blue:0,  Green:0,  Yellow:0, Yellow:0, White:0,
+            White:0, Yellow:0, Yellow:0, Yellow:0, Yellow:1,
+            Red:0,   Yellow:0, Red:1,    Red:0,    Yellow:0,
+            Red:0,   Yellow:0, Red:0,    Red:0,    Yellow:1,
+            White:0, Yellow:2, Yellow:0, Yellow:0, Yellow:0,
+        ],
+    }
+}
+
+fn get_input_items() -> Vec<Vec<Item>> {
+    // 2 uni, 1 beehive and 1 broken stone
+    vec![
+        vec![
+            Item {
+                color: Color::Yellow,
+                quality: 15,
+                shape: Shape([
+                    [true, false, false],
+                    [true, false, false],
+                    [true, false, false],
+                ]),
+            },
+            Item {
+                color: Color::Yellow,
+                quality: 15,
+                shape: Shape([
+                    [true, false, false],
+                    [true, false, false],
+                    [true, false, false],
+                ]),
+            },
+        ],
+        vec![Item {
+            color: Color::Yellow,
+            quality: 10,
+            shape: Shape([
+                [true, false, false],
+                [true, true, false],
+                [false, false, false],
+            ]),
+        }],
+        vec![Item {
+            color: Color::White,
+            quality: 15,
+            shape: Shape([
+                [true, false, false],
+                [true, false, false],
+                [true, false, false],
+            ]),
+        }],
+    ]
+}
+
+#[allow(unused)]
+fn get_uni_bag_goals() -> [Goal; 3] {
+    [
+        Goal {
+            color: Color::Yellow,
+            quality_levels: vec![50, 100],
+        },
+        Goal {
+            color: Color::Yellow,
+            quality_levels: vec![30, 50],
+        },
+        Goal {
+            color: Color::Yellow,
+            quality_levels: vec![30, 55],
+        },
+    ]
+}
