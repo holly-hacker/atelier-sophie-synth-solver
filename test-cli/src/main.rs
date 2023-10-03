@@ -1,15 +1,20 @@
 use synth_brute::*;
 
 macro_rules! tiles {
-    ($($color:ident:$level:expr,)*) => {
+    ($($color:ident $level:expr,)*) => {
         vec![
-            $(tile!($color:$level),)*
+            $(tile!($color $level),)*
         ]
     };
 }
 
 macro_rules! tile {
-    ($color:ident:$level:expr) => {
+    (R $level:expr) => {tile!(Red $level)};
+    (B $level:expr) => {tile!(Blue $level)};
+    (G $level:expr) => {tile!(Green $level)};
+    (Y $level:expr) => {tile!(Yellow $level)};
+    (W $level:expr) => {tile!(White $level)};
+    ($color:ident $level:expr) => {
         Some(Tile {
             color: Color::$color,
             level: $level,
@@ -68,24 +73,10 @@ fn main() {
 
     println!("gained scores: {:?}", scores);
     let coverage = playfield.calculate_coverage();
-    let final_scores = items
+    let final_scores = scores
         .iter()
-        .zip(scores.iter())
-        .map(|(item_group, score_set)| {
-            score_set
-                .into_iter()
-                .map(|(color, color_score)| {
-                    let base = item_group
-                        .iter()
-                        .filter(|i| i.color == color)
-                        .map(|i| i.quality)
-                        .sum::<usize>();
-                    let ratio = coverage.get_color_ratio_conditional(color, &playfield);
-                    (base + color_score) as f32 * (1. + ratio)
-                })
-                .sum::<f32>()
-        })
-        .map(|num| num as usize)
+        .zip(items.iter())
+        .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &playfield))
         .collect::<Vec<_>>();
     println!("final scores: {:?}", final_scores);
 }
@@ -162,13 +153,12 @@ fn print_playfield_coverage(playfield: &Playfield) {
 fn get_test_playfield() -> Playfield {
     Playfield {
         width: 5,
-        #[rustfmt::skip]
         data: tiles![
-            Blue:0,  Green:0,  Yellow:0, Yellow:0, White:0,
-            White:0, Yellow:0, Yellow:0, Yellow:0, Yellow:1,
-            Red:0,   Yellow:0, Red:1,    Red:0,    Yellow:0,
-            Red:0,   Yellow:0, Red:0,    Red:0,    Yellow:1,
-            White:0, Yellow:2, Yellow:0, Yellow:0, Yellow:0,
+            B 0, G 0, Y 0, Y 0, W 0,
+            W 0, Y 0, Y 0, Y 0, Y 1,
+            R 0, Y 0, R 1, R 0, Y 0,
+            R 0, Y 0, R 0, R 0, Y 1,
+            W 0, Y 2, Y 0, Y 0, Y 0,
         ],
     }
 }
@@ -180,39 +170,19 @@ fn get_input_items() -> Vec<Vec<Item>> {
             Item {
                 color: Color::Yellow,
                 quality: 15,
-                shape: Shape([
-                    [true, false, false],
-                    [true, false, false],
-                    [true, false, false],
-                ]),
-            },
-            Item {
-                color: Color::Yellow,
-                quality: 15,
-                shape: Shape([
-                    [true, false, false],
-                    [true, false, false],
-                    [true, false, false],
-                ]),
-            },
+                shape: Shape::from_binary([0b100, 0b100, 0b100]),
+            };
+            2
         ],
         vec![Item {
             color: Color::Yellow,
             quality: 10,
-            shape: Shape([
-                [true, false, false],
-                [true, true, false],
-                [false, false, false],
-            ]),
+            shape: Shape::from_binary([0b100, 0b110, 0b000]),
         }],
         vec![Item {
             color: Color::White,
             quality: 15,
-            shape: Shape([
-                [true, false, false],
-                [true, false, false],
-                [true, false, false],
-            ]),
+            shape: Shape::from_binary([0b100, 0b100, 0b100]),
         }],
     ]
 }

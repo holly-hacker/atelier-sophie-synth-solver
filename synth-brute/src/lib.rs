@@ -1,6 +1,8 @@
 mod impl_color;
 mod impl_color_score_set;
 mod impl_coverage;
+mod impl_item;
+mod impl_placement;
 mod impl_playfield;
 mod impl_shape;
 

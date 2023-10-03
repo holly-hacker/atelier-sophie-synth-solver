@@ -6,6 +6,26 @@ impl Shape {
     pub const WIDTH: usize = 3;
     pub const HEIGHT: usize = 3;
 
+    pub fn from_binary(arr: [u8; 3]) -> Self {
+        Self([
+            [
+                arr[0] & 0b100 != 0,
+                arr[0] & 0b010 != 0,
+                arr[0] & 0b001 != 0,
+            ],
+            [
+                arr[1] & 0b100 != 0,
+                arr[1] & 0b010 != 0,
+                arr[1] & 0b001 != 0,
+            ],
+            [
+                arr[2] & 0b100 != 0,
+                arr[2] & 0b010 != 0,
+                arr[2] & 0b001 != 0,
+            ],
+        ])
+    }
+
     // TODO: interesting optimization candidate after we remove heap allocs
     // - we can calculate the maximum number of tiles that can be covered by a shape
     // - it is likely faster to query individual tiles rather than get a list
@@ -61,5 +81,25 @@ impl Shape {
             }
         }
         max_y
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_from_binary() {
+        assert_eq!([[false; 3]; 3], Shape::from_binary([0b000, 0b000, 0b000]).0);
+        assert_eq!([[true; 3]; 3], Shape::from_binary([0b111, 0b111, 0b111]).0);
+
+        assert_eq!(
+            [
+                [false, true, true],
+                [true, false, true],
+                [true, true, false],
+            ],
+            Shape::from_binary([0b011, 0b101, 0b110]).0
+        );
     }
 }

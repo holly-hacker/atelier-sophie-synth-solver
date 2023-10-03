@@ -1,4 +1,4 @@
-use crate::{Color, ColorScoreSet};
+use crate::{Color, ColorScoreSet, CoverageInfo, Item, Playfield};
 
 impl ColorScoreSet {
     pub fn get(&self, color: Color) -> usize {
@@ -17,6 +17,26 @@ impl ColorScoreSet {
             (Color::from_index(3), self.scores[3]),
             (Color::from_index(4), self.scores[4]),
         ]
+    }
+
+    pub fn calculate_score(
+        &self,
+        items: &[Item],
+        coverage: &CoverageInfo,
+        playfield: &Playfield,
+    ) -> usize {
+        self.into_iter()
+            .map(|(color, color_score)| {
+                let base = items
+                    .iter()
+                    .filter(|i| i.color == color)
+                    .map(|i| i.quality)
+                    .sum::<usize>();
+                let ratio = coverage.get_color_ratio_conditional(color, playfield);
+                (base + color_score) as f32 * (1. + ratio)
+            })
+            .map(|f| f as usize)
+            .sum()
     }
 }
 
