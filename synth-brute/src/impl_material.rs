@@ -1,10 +1,10 @@
 use crate::*;
 
-impl Item {
+impl Material {
     pub fn new(color: Color, quality: usize, shape: Shape) -> Self {
         Self {
             color,
-            quality,
+            effect_value: quality,
             shape,
         }
     }

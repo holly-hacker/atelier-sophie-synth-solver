@@ -2,44 +2,44 @@ use crate::*;
 
 use itertools::Itertools;
 
-impl Playfield {
+impl Cauldron {
     pub fn height(&self) -> usize {
-        self.data.len() / self.width
+        self.tiles.len() / self.size
     }
 
     pub fn get_position(&self, index: usize) -> (usize, usize) {
-        debug_assert!(index < self.data.len());
-        (index % self.width, index / self.width)
+        debug_assert!(index < self.tiles.len());
+        (index % self.size, index / self.size)
     }
 
     pub fn get_tile(&self, index: (usize, usize)) -> Option<Tile> {
-        debug_assert!(index.0 < self.width);
+        debug_assert!(index.0 < self.size);
         debug_assert!(index.0 < self.height());
         let (row, col) = index;
-        let index = row * self.width + col;
-        *self.data.get(index).unwrap()
+        let index = row * self.size + col;
+        *self.tiles.get(index).unwrap()
     }
 
     pub fn get_tile_mut(&mut self, index: (usize, usize)) -> Option<&mut Tile> {
-        debug_assert!(index.0 < self.width);
+        debug_assert!(index.0 < self.size);
         debug_assert!(index.0 < self.height());
 
         let (x, y) = index;
-        let index = y * self.width + x;
+        let index = y * self.size + x;
 
-        self.data.get_mut(index).unwrap().as_mut()
+        self.tiles.get_mut(index).unwrap().as_mut()
     }
 
     pub fn place(
         &mut self,
-        items: &[Vec<Item>],
+        material_groups: &[Vec<Material>],
         item_index: (usize, usize),
         placement: Placement,
     ) -> usize {
-        let item = items[item_index.0][item_index.1];
-        let shape = &item.shape;
+        let material = material_groups[item_index.0][item_index.1];
+        let shape = &material.shape;
         let (placement_x, placement_y) = self.get_position(placement.index);
-        debug_assert!(placement_x + shape.get_max_x() <= self.width);
+        debug_assert!(placement_x + shape.get_max_x() <= self.size);
         debug_assert!(placement_y + shape.get_max_y() <= self.height());
 
         // apply the shape to the playfield and count score
@@ -53,11 +53,15 @@ impl Playfield {
                     tile.played_color.is_none(),
                     "overlapping tiles is not yet implemented"
                 );
-                tile.played_color = Some(item.color);
+                tile.played_color = Some(material.color);
 
-                // TODO: this currently assumes a "Grandma's Cauldron" with Bonus Display Level 1
+                // TODO: this currently assumes a "Grandma's Cauldron"
                 // this means that matching colors give 50% bonus (rounded down) and tiles give 3/5/7 points
-                let bonus = if item.color == tile.color { 1.5 } else { 1. };
+                let bonus = if material.color == tile.color {
+                    1.5
+                } else {
+                    1.
+                };
                 score += match tile.level {
                     0 => 0.,
                     1 => 3. * bonus,
@@ -77,7 +81,7 @@ impl Playfield {
             let position_x = placement_x as isize + neighbour_x;
             let position_y = placement_y as isize + neighbour_y;
 
-            if !(0..self.width as isize).contains(&position_x)
+            if !(0..self.size as isize).contains(&position_x)
                 || !(0..self.height() as isize).contains(&position_y)
             {
                 continue;
@@ -102,7 +106,7 @@ impl Playfield {
     }
 
     pub fn calculate_coverage(&self) -> CoverageInfo {
-        self.data
+        self.tiles
             .iter()
             .filter_map(|t| t.as_ref())
             .filter_map(|t| t.played_color)

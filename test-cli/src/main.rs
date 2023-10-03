@@ -28,64 +28,64 @@ macro_rules! tile {
 
 fn main() {
     println!("Hello, world!");
-    let items = get_input_items();
-    let mut playfield = get_test_playfield();
-    print_playfield(&playfield);
+    let materials = get_input_materials();
+    let mut cauldron = get_test_cauldron();
+    print_playfield(&cauldron);
     println!();
 
-    let mut scores = vec![ColorScoreSet::default(); items.len()];
+    let mut scores = vec![ColorScoreSet::default(); materials.len()];
 
     let placement1 = Placement {
         index: 2 + 5,
         transformations: (),
     };
-    *scores[0].get_mut(items[0][0].color) += playfield.place(&items, (0, 0), placement1);
-    print_playfield_coverage(&playfield);
-    print_playfield(&playfield);
+    *scores[0].get_mut(materials[0][0].color) += cauldron.place(&materials, (0, 0), placement1);
+    print_playfield_coverage(&cauldron);
+    print_playfield(&cauldron);
     println!();
 
     let placement2 = Placement {
         index: 1 + 5 * 3,
         transformations: (),
     };
-    *scores[1].get_mut(items[1][0].color) += playfield.place(&items, (1, 0), placement2);
-    print_playfield_coverage(&playfield);
-    print_playfield(&playfield);
+    *scores[1].get_mut(materials[1][0].color) += cauldron.place(&materials, (1, 0), placement2);
+    print_playfield_coverage(&cauldron);
+    print_playfield(&cauldron);
     println!();
 
     let placement3 = Placement {
         index: 3 + 5 * 2,
         transformations: (),
     };
-    *scores[2].get_mut(items[2][0].color) += playfield.place(&items, (2, 0), placement3);
-    print_playfield_coverage(&playfield);
-    print_playfield(&playfield);
+    *scores[2].get_mut(materials[2][0].color) += cauldron.place(&materials, (2, 0), placement3);
+    print_playfield_coverage(&cauldron);
+    print_playfield(&cauldron);
     println!();
 
     let placement4 = Placement {
         index: 0,
         transformations: (),
     };
-    *scores[0].get_mut(items[0][1].color) += playfield.place(&items, (0, 1), placement4);
-    print_playfield_coverage(&playfield);
-    print_playfield(&playfield);
+    *scores[0].get_mut(materials[0][1].color) += cauldron.place(&materials, (0, 1), placement4);
+    print_playfield_coverage(&cauldron);
+    print_playfield(&cauldron);
     println!();
 
     println!("gained scores: {:?}", scores);
-    let coverage = playfield.calculate_coverage();
+    let coverage = cauldron.calculate_coverage();
     let final_scores = scores
         .iter()
-        .zip(items.iter())
-        .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &playfield))
+        .zip(materials.iter())
+        .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &cauldron))
         .collect::<Vec<_>>();
     println!("final scores: {:?}", final_scores);
 }
 
-fn print_playfield(playfield: &Playfield) {
+fn print_playfield(playfield: &Cauldron) {
     use owo_colors::{OwoColorize, Style};
 
-    for row in 0..playfield.width {
-        for col in 0..playfield.width {
+    for row in 0..playfield.size {
+        for col in 0..playfield.size {
             let tile = playfield.get_tile((row, col));
             let Some(tile) = tile else {
                 print!(" ");
@@ -117,7 +117,7 @@ fn print_playfield(playfield: &Playfield) {
     }
 }
 
-fn print_playfield_coverage(playfield: &Playfield) {
+fn print_playfield_coverage(playfield: &Cauldron) {
     use owo_colors::OwoColorize;
     let coverage = playfield.calculate_coverage();
     println!(
@@ -150,10 +150,10 @@ fn print_playfield_coverage(playfield: &Playfield) {
     );
 }
 
-fn get_test_playfield() -> Playfield {
-    Playfield {
-        width: 5,
-        data: tiles![
+fn get_test_cauldron() -> Cauldron {
+    Cauldron {
+        size: 5,
+        tiles: tiles![
             B 0, G 0, Y 0, Y 0, W 0,
             W 0, Y 0, Y 0, Y 0, Y 1,
             R 0, Y 0, R 1, R 0, Y 0,
@@ -163,25 +163,25 @@ fn get_test_playfield() -> Playfield {
     }
 }
 
-fn get_input_items() -> Vec<Vec<Item>> {
+fn get_input_materials() -> Vec<Vec<Material>> {
     // 2 uni, 1 beehive and 1 broken stone
     vec![
         vec![
-            Item {
+            Material {
                 color: Color::Yellow,
-                quality: 15,
+                effect_value: 15,
                 shape: Shape::from_binary([0b100, 0b100, 0b100]),
             };
             2
         ],
-        vec![Item {
+        vec![Material {
             color: Color::Yellow,
-            quality: 10,
+            effect_value: 10,
             shape: Shape::from_binary([0b100, 0b110, 0b000]),
         }],
-        vec![Item {
+        vec![Material {
             color: Color::White,
-            quality: 15,
+            effect_value: 15,
             shape: Shape::from_binary([0b100, 0b100, 0b100]),
         }],
     ]
@@ -191,16 +191,13 @@ fn get_input_items() -> Vec<Vec<Item>> {
 fn get_uni_bag_goals() -> [Goal; 3] {
     [
         Goal {
-            color: Color::Yellow,
-            quality_levels: vec![50, 100],
+            effect_value_thresholds: vec![50, 100],
         },
         Goal {
-            color: Color::Yellow,
-            quality_levels: vec![30, 50],
+            effect_value_thresholds: vec![30, 50],
         },
         Goal {
-            color: Color::Yellow,
-            quality_levels: vec![30, 55],
+            effect_value_thresholds: vec![30, 55],
         },
     ]
 }
