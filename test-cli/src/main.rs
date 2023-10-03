@@ -1,4 +1,4 @@
-use synth_brute::*;
+use synth_brute::{errors::SynthError, *};
 
 macro_rules! tiles {
     ($($color:ident $level:expr,)*) => {
@@ -26,7 +26,7 @@ macro_rules! tile {
     };
 }
 
-fn main() {
+fn main() -> Result<(), SynthError> {
     println!("Hello, world!");
     let materials = get_input_materials();
     let mut cauldron = get_test_cauldron();
@@ -39,7 +39,7 @@ fn main() {
         index: 2 + 5,
         transformations: (),
     };
-    *scores[0].get_mut(materials[0][0].color) += cauldron.place(&materials, (0, 0), placement1);
+    *scores[0].get_mut(materials[0][0].color) += cauldron.place(&materials, (0, 0), placement1)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -48,7 +48,7 @@ fn main() {
         index: 1 + 5 * 3,
         transformations: (),
     };
-    *scores[1].get_mut(materials[1][0].color) += cauldron.place(&materials, (1, 0), placement2);
+    *scores[1].get_mut(materials[1][0].color) += cauldron.place(&materials, (1, 0), placement2)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -57,7 +57,7 @@ fn main() {
         index: 3 + 5 * 2,
         transformations: (),
     };
-    *scores[2].get_mut(materials[2][0].color) += cauldron.place(&materials, (2, 0), placement3);
+    *scores[2].get_mut(materials[2][0].color) += cauldron.place(&materials, (2, 0), placement3)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -66,7 +66,7 @@ fn main() {
         index: 0,
         transformations: (),
     };
-    *scores[0].get_mut(materials[0][1].color) += cauldron.place(&materials, (0, 1), placement4);
+    *scores[0].get_mut(materials[0][1].color) += cauldron.place(&materials, (0, 1), placement4)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -79,6 +79,8 @@ fn main() {
         .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &cauldron))
         .collect::<Vec<_>>();
     println!("final scores: {:?}", final_scores);
+
+    Ok(())
 }
 
 fn print_playfield(playfield: &Cauldron) {

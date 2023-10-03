@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{errors::SynthError, *};
 
 use itertools::Itertools;
 
@@ -35,12 +35,16 @@ impl Cauldron {
         material_groups: &[Vec<Material>],
         item_index: (usize, usize),
         placement: Placement,
-    ) -> usize {
+    ) -> Result<usize, SynthError> {
         let material = material_groups[item_index.0][item_index.1];
         let shape = &material.shape;
         let (placement_x, placement_y) = self.get_position(placement.index);
-        debug_assert!(placement_x + shape.get_max_x() <= self.size);
-        debug_assert!(placement_y + shape.get_max_y() <= self.height());
+
+        if placement_x + shape.get_max_x() > self.size
+            || placement_y + shape.get_max_y() > self.height()
+        {
+            return Err(SynthError::OutOfBounds);
+        }
 
         // apply the shape to the playfield and count score
         let mut score = 0.;
@@ -49,10 +53,10 @@ impl Cauldron {
                 let tile = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .expect("cannot place item on unavailable tile");
-                assert!(
-                    tile.played_color.is_none(),
-                    "overlapping tiles is not yet implemented"
-                );
+                if tile.played_color.is_some() {
+                    // TODO: implement tile overlap
+                    return Err(SynthError::DisallowedOverlap);
+                }
                 tile.played_color = Some(material.color);
 
                 // TODO: this currently assumes a "Grandma's Cauldron"
@@ -102,7 +106,7 @@ impl Cauldron {
             }
         }
 
-        score
+        Ok(score)
     }
 
     pub fn calculate_coverage(&self) -> CoverageInfo {

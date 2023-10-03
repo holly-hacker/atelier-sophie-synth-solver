@@ -1,3 +1,4 @@
+pub mod errors;
 mod impl_cauldron;
 mod impl_color;
 mod impl_color_score_set;

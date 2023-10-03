@@ -57,16 +57,20 @@ fn test_calculation() {
     let mut scores = vec![ColorScoreSet::default(); materials.len()];
 
     let placement1 = Placement::new(2 + 5, ());
-    *scores[0].get_mut(materials[0][0].color) += cauldron.place(&materials, (0, 0), placement1);
+    *scores[0].get_mut(materials[0][0].color) +=
+        cauldron.place(&materials, (0, 0), placement1).unwrap();
 
     let placement2 = Placement::new(1 + 5 * 3, ());
-    *scores[1].get_mut(materials[1][0].color) += cauldron.place(&materials, (1, 0), placement2);
+    *scores[1].get_mut(materials[1][0].color) +=
+        cauldron.place(&materials, (1, 0), placement2).unwrap();
 
     let placement3 = Placement::new(3 + 5 * 2, ());
-    *scores[2].get_mut(materials[2][0].color) += cauldron.place(&materials, (2, 0), placement3);
+    *scores[2].get_mut(materials[2][0].color) +=
+        cauldron.place(&materials, (2, 0), placement3).unwrap();
 
     let placement4 = Placement::new(0, ());
-    *scores[0].get_mut(materials[0][1].color) += cauldron.place(&materials, (0, 1), placement4);
+    *scores[0].get_mut(materials[0][1].color) +=
+        cauldron.place(&materials, (0, 1), placement4).unwrap();
 
     let coverage = cauldron.calculate_coverage();
     assert_eq!(coverage.get_color_ratio(Color::Red, &cauldron), 0.);
