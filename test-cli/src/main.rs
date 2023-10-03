@@ -39,7 +39,7 @@ fn main() -> Result<(), SynthError> {
         index: 2 + 5,
         transformations: (),
     };
-    *scores[0].get_mut(materials[0][0].color) += cauldron.place(&materials, (0, 0), placement1)?;
+    cauldron.place(&materials, (0, 0), placement1, &mut scores)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -48,7 +48,7 @@ fn main() -> Result<(), SynthError> {
         index: 1 + 5 * 3,
         transformations: (),
     };
-    *scores[1].get_mut(materials[1][0].color) += cauldron.place(&materials, (1, 0), placement2)?;
+    cauldron.place(&materials, (1, 0), placement2, &mut scores)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -57,7 +57,7 @@ fn main() -> Result<(), SynthError> {
         index: 3 + 5 * 2,
         transformations: (),
     };
-    *scores[2].get_mut(materials[2][0].color) += cauldron.place(&materials, (2, 0), placement3)?;
+    cauldron.place(&materials, (2, 0), placement3, &mut scores)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();
@@ -66,7 +66,7 @@ fn main() -> Result<(), SynthError> {
         index: 0,
         transformations: (),
     };
-    *scores[0].get_mut(materials[0][1].color) += cauldron.place(&materials, (0, 1), placement4)?;
+    cauldron.place(&materials, (0, 1), placement4, &mut scores)?;
     print_playfield_coverage(&cauldron);
     print_playfield(&cauldron);
     println!();

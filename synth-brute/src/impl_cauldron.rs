@@ -35,7 +35,8 @@ impl Cauldron {
         material_groups: &[Vec<Material>],
         item_index: (usize, usize),
         placement: Placement,
-    ) -> Result<usize, SynthError> {
+        scores: &mut [ColorScoreSet],
+    ) -> Result<(), SynthError> {
         let material = material_groups[item_index.0][item_index.1];
         let shape = &material.shape;
         let (placement_x, placement_y) = self.get_position(placement.index);
@@ -106,7 +107,10 @@ impl Cauldron {
             }
         }
 
-        Ok(score)
+        // apply score now, after possible errors
+        *scores[item_index.0].get_mut(material.color) += score;
+
+        Ok(())
     }
 
     pub fn calculate_coverage(&self) -> CoverageInfo {
