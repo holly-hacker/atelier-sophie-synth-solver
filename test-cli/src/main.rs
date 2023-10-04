@@ -30,55 +30,41 @@ fn main() -> Result<(), SynthError> {
     println!("Hello, world!");
     let materials = get_input_materials();
     let mut cauldron = get_test_cauldron();
-    print_playfield(&cauldron);
+
+    let time_before = std::time::Instant::now();
+    let optimal_route =
+        find_optimal::find_optimal(&cauldron, &materials).expect("should find route");
+    let elapsed = time_before.elapsed();
+    println!("Found optimal route in {:?}", elapsed);
     println!();
 
     let mut scores = vec![ColorScoreSet::default(); materials.len()];
+    for (i, move_) in optimal_route.iter().enumerate() {
+        let (placement_x, placement_y) = cauldron.get_position(move_.placement.index);
+        println!(
+            "[Move {}] Place material {}-{} at {placement_x}x{placement_y}",
+            i + 1,
+            move_.material_index.0,
+            move_.material_index.1
+        );
+        cauldron.place(
+            &materials,
+            move_.material_index,
+            move_.placement,
+            &mut scores,
+        )?;
+        print_playfield_coverage(&cauldron);
+        print_playfield(&cauldron);
+        println!();
+    }
 
-    let placement1 = Placement {
-        index: 2 + 5,
-        transformations: (),
-    };
-    cauldron.place(&materials, (0, 0), placement1, &mut scores)?;
-    print_playfield_coverage(&cauldron);
-    print_playfield(&cauldron);
-    println!();
-
-    let placement2 = Placement {
-        index: 1 + 5 * 3,
-        transformations: (),
-    };
-    cauldron.place(&materials, (1, 0), placement2, &mut scores)?;
-    print_playfield_coverage(&cauldron);
-    print_playfield(&cauldron);
-    println!();
-
-    let placement3 = Placement {
-        index: 3 + 5 * 2,
-        transformations: (),
-    };
-    cauldron.place(&materials, (2, 0), placement3, &mut scores)?;
-    print_playfield_coverage(&cauldron);
-    print_playfield(&cauldron);
-    println!();
-
-    let placement4 = Placement {
-        index: 0,
-        transformations: (),
-    };
-    cauldron.place(&materials, (0, 1), placement4, &mut scores)?;
-    print_playfield_coverage(&cauldron);
-    print_playfield(&cauldron);
-    println!();
-
-    println!("gained scores: {:?}", scores);
     let coverage = cauldron.calculate_coverage();
     let final_scores = scores
         .iter()
         .zip(materials.iter())
         .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &cauldron))
         .collect::<Vec<_>>();
-    println!("final scores: {:?}", final_scores);
+    println!("final points: {final_scores:?}");
 
     Ok(())
 }

@@ -1,4 +1,5 @@
 pub mod errors;
+pub mod find_optimal;
 mod impl_cauldron;
 mod impl_color;
 mod impl_color_score_set;
@@ -22,7 +23,7 @@ pub enum Color {
 }
 
 /// The placement of a material on the playfield.
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Placement {
     /// The index in the playfield where the item is placed.
     pub index: usize,
@@ -82,7 +83,7 @@ pub struct CoverageInfo {
     coverage: [u32; 5],
 }
 
-/// The effect value score for each color of an item group.
+/// The effect value score for each color of an item group/a single goal.
 #[derive(Default, Clone, Copy, Debug)]
 pub struct ColorScoreSet {
     scores: [u32; 5],
