@@ -29,42 +29,50 @@ macro_rules! tile {
 fn main() -> Result<(), SynthError> {
     println!("Hello, world!");
     let materials = get_input_materials();
-    let mut cauldron = get_test_cauldron();
+    let cauldron = get_test_cauldron();
+    let goals = get_uni_bag_goals();
 
     let time_before = std::time::Instant::now();
-    let optimal_route =
-        find_optimal::find_optimal(&cauldron, &materials).expect("should find route");
+    let optimal_routes = find_optimal::find_optimal_routes(&cauldron, &materials, &goals);
     let elapsed = time_before.elapsed();
-    println!("Found optimal route in {:?}", elapsed);
+    println!(
+        "Found {} optimal routes in {elapsed:?}",
+        optimal_routes.len()
+    );
     println!();
 
-    let mut scores = vec![ColorScoreSet::default(); materials.len()];
-    for (i, move_) in optimal_route.iter().enumerate() {
-        let (placement_x, placement_y) = cauldron.get_position(move_.placement.index);
-        println!(
-            "[Move {}] Place material {}-{} at {placement_x}x{placement_y}",
-            i + 1,
-            move_.material_index.0,
-            move_.material_index.1
-        );
-        cauldron.place(
-            &materials,
-            move_.material_index,
-            move_.placement,
-            &mut scores,
-        )?;
-        print_playfield_coverage(&cauldron);
-        print_playfield(&cauldron);
-        println!();
-    }
+    for (result, route) in optimal_routes.iter() {
+        let mut scores = vec![ColorScoreSet::default(); materials.len()];
+        let mut cauldron = cauldron.clone();
+        for (i, move_) in route.iter().enumerate() {
+            let (placement_x, placement_y) = cauldron.get_position(move_.placement.index);
+            println!(
+                "[Move {}] Place material {}-{} at {placement_x}x{placement_y}",
+                i + 1,
+                move_.material_index.0,
+                move_.material_index.1
+            );
+            cauldron.place(
+                &materials,
+                move_.material_index,
+                move_.placement,
+                &mut scores,
+            )?;
+            print_playfield_coverage(&cauldron);
+            print_playfield(&cauldron);
+            println!();
+        }
 
-    let coverage = cauldron.calculate_coverage();
-    let final_scores = scores
-        .iter()
-        .zip(materials.iter())
-        .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &cauldron))
-        .collect::<Vec<_>>();
-    println!("final points: {final_scores:?}");
+        let coverage = cauldron.calculate_coverage();
+        let final_score = scores
+            .iter()
+            .zip(materials.iter())
+            .map(|(score_set, item_group)| {
+                score_set.calculate_score(item_group, &coverage, &cauldron)
+            })
+            .collect::<Vec<_>>();
+        println!("Result: {result:?} with score {final_score:?}");
+    }
 
     Ok(())
 }
@@ -175,7 +183,6 @@ fn get_input_materials() -> Vec<Vec<Material>> {
     ]
 }
 
-#[allow(unused)]
 fn get_uni_bag_goals() -> [Goal; 3] {
     [
         Goal {
