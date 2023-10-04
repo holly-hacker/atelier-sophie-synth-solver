@@ -82,23 +82,31 @@ impl Shape {
     }
 
     pub fn get_max_x(&self) -> usize {
-        let mut max_x = 0;
-        for (y, x) in (0..Self::HEIGHT).cartesian_product(0..Self::WIDTH) {
-            if self.get(x, y) {
-                max_x = max_x.max(x);
-            }
+        debug_assert_ne!(self.0, 0);
+        debug_assert_eq!(Self::WIDTH, 3);
+        debug_assert_eq!(Self::HEIGHT, 3);
+
+        if self.0 & 0b100_100_100 != 0 {
+            2
+        } else if self.0 & 0b010_010_010 != 0 {
+            1
+        } else {
+            0
         }
-        max_x
     }
 
     pub fn get_max_y(&self) -> usize {
-        let mut max_y = 0;
-        for (y, x) in (0..Self::HEIGHT).cartesian_product(0..Self::WIDTH) {
-            if self.get(x, y) {
-                max_y = max_y.max(y);
-            }
+        debug_assert_ne!(self.0, 0);
+        debug_assert_eq!(Self::WIDTH, 3);
+        debug_assert_eq!(Self::HEIGHT, 3);
+
+        if self.0 & 0b111_000_000 != 0 {
+            2
+        } else if self.0 & 0b000_111_000 != 0 {
+            1
+        } else {
+            0
         }
-        max_y
     }
 }
 
