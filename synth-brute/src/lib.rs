@@ -79,7 +79,7 @@ pub struct Material {
 #[derive(Copy, Clone)]
 pub struct Shape(u16);
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ShapeNeighbours(u32);
 
 /// An item effect that can be reached by getting certain item effect levels.

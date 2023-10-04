@@ -1,10 +1,22 @@
+use std::sync::OnceLock;
+
 use itertools::Itertools;
 
 use crate::*;
 
+/// A shape is a 3x3 grid of tiles that can be placed on the playfield, so there are 2^(3*3)=2^9=512
+/// possible shapes. We can cache all of them fairly easily since we can store the neighbours in a
+/// single u32, so this entire cache takes up 2kb.
+static NEIGHBOUR_CACHE: OnceLock<[ShapeNeighbours; 512]> = OnceLock::new();
+
 impl Shape {
     pub const WIDTH: usize = 3;
     pub const HEIGHT: usize = 3;
+
+    /// Initialize the neighbour cache so it doesn't impact performance measurements in a weird way.
+    pub fn init_neighbour_cache() {
+        _ = Self(0).get_neighbours();
+    }
 
     pub fn from_binary(arr: [u8; 3]) -> Self {
         let bits_rev = (arr[2] as u16) | ((arr[1] as u16) << 3) | ((arr[0] as u16) << 6);
@@ -24,7 +36,18 @@ impl Shape {
     // TODO: interesting optimization candidate after we remove heap allocs
     // - we can calculate the maximum number of tiles that can be covered by a shape
     // - it is likely faster to query individual tiles rather than get a list
+    // TODO: just cache it instead! :D
     pub fn get_neighbours(&self) -> ShapeNeighbours {
+        NEIGHBOUR_CACHE.get_or_init(|| {
+            let mut cache = [ShapeNeighbours::default(); 512];
+            for (i, cache_item) in cache.iter_mut().enumerate() {
+                *cache_item = Self(i as u16).calculate_neighbours();
+            }
+            cache
+        })[self.0 as usize]
+    }
+
+    fn calculate_neighbours(&self) -> ShapeNeighbours {
         let width = Self::WIDTH as isize;
         let height = Self::HEIGHT as isize;
 
@@ -87,8 +110,7 @@ mod tests {
     fn test_from_binary() {
         assert_eq!(0, Shape::from_binary([0b000, 0b000, 0b000]).0);
         assert_eq!(0b111_111_111, Shape::from_binary([0b111, 0b111, 0b111]).0);
-
-        assert_eq!(0b011_101_110, Shape::from_binary([0b011, 0b101, 0b110]).0);
+        assert_eq!(0b011_101_010, Shape::from_binary([0b010, 0b101, 0b110]).0);
     }
 
     #[test]
@@ -104,5 +126,18 @@ mod tests {
         assert!(shape.get(0, 2));
         assert!(shape.get(1, 2));
         assert!(!shape.get(2, 2));
+    }
+
+    #[test]
+    fn test_cache() {
+        Shape::init_neighbour_cache();
+
+        for i in 0..512 {
+            let shape = Shape(i as u16);
+            assert_eq!(shape.get_neighbours(), shape.calculate_neighbours());
+        }
+
+        let shape = Shape::from_binary([0b010, 0b101, 0b110]);
+        assert_eq!(shape.get_neighbours(), shape.calculate_neighbours());
     }
 }

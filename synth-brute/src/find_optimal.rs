@@ -43,6 +43,8 @@ pub fn find_optimal_routes(
 ) -> Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)> {
     assert_eq!(materials.len(), goals.len());
 
+    Shape::init_neighbour_cache();
+
     let path: ArrayVec<[Move; MAX_ITEMS]> = Default::default();
     let mut score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]> = Default::default();
     for _ in 0..materials.len() {
