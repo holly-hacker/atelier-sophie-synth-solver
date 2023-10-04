@@ -45,7 +45,7 @@ pub struct Tile {
     /// The bonus level of the tile. Value between 0 and 3 inclusive.
     ///
     /// The effect of this tile depends on the cauldron itself.
-    pub level: usize,
+    pub level: u32,
     /// The color that was played here
     pub played_color: Option<Color>,
 }
@@ -56,7 +56,7 @@ pub struct Material {
     pub color: Color,
     /// The base value of an item that gets added to the score, before applying the coverage
     /// multiplier.
-    pub effect_value: usize,
+    pub effect_value: u32,
     /// The shape of this item.
     pub shape: Shape,
 }
@@ -68,7 +68,7 @@ pub struct Shape(pub [[bool; Self::WIDTH]; Self::HEIGHT]);
 /// An item effect that can be reached by getting certain item effect levels.
 pub struct Goal {
     /// Thresholds where the goal is considered met.
-    pub effect_value_thresholds: Vec<usize>,
+    pub effect_value_thresholds: Vec<u32>,
 }
 
 /// The coverage of a playfield.
@@ -79,11 +79,11 @@ pub struct Goal {
 /// Coverage is later used to multiply the progress towards the goals.
 #[derive(Default)]
 pub struct CoverageInfo {
-    coverage: [usize; 5],
+    coverage: [u32; 5],
 }
 
 /// The effect value score for each color of an item group.
 #[derive(Default, Clone, Copy, Debug)]
 pub struct ColorScoreSet {
-    scores: [usize; 5],
+    scores: [u32; 5],
 }

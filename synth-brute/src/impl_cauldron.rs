@@ -3,10 +3,6 @@ use crate::{errors::SynthError, *};
 use itertools::Itertools;
 
 impl Cauldron {
-    pub fn height(&self) -> usize {
-        self.tiles.len() / self.size
-    }
-
     pub fn get_position(&self, index: usize) -> (usize, usize) {
         debug_assert!(index < self.tiles.len());
         (index % self.size, index / self.size)
@@ -14,7 +10,7 @@ impl Cauldron {
 
     pub fn get_tile(&self, index: (usize, usize)) -> Option<Tile> {
         debug_assert!(index.0 < self.size);
-        debug_assert!(index.0 < self.height());
+        debug_assert!(index.1 < self.size);
         let (row, col) = index;
         let index = row * self.size + col;
         *self.tiles.get(index).unwrap()
@@ -22,7 +18,7 @@ impl Cauldron {
 
     pub fn get_tile_mut(&mut self, index: (usize, usize)) -> Option<&mut Tile> {
         debug_assert!(index.0 < self.size);
-        debug_assert!(index.0 < self.height());
+        debug_assert!(index.1 < self.size);
 
         let (x, y) = index;
         let index = y * self.size + x;
@@ -37,12 +33,14 @@ impl Cauldron {
         placement: Placement,
         scores: &mut [ColorScoreSet],
     ) -> Result<(), SynthError> {
+        debug_assert_eq!(material_groups.len(), scores.len());
+
         let material = material_groups[item_index.0][item_index.1];
         let shape = &material.shape;
         let (placement_x, placement_y) = self.get_position(placement.index);
 
-        if placement_x + shape.get_max_x() > self.size
-            || placement_y + shape.get_max_y() > self.height()
+        if placement_x + shape.get_max_x() >= self.size
+            || placement_y + shape.get_max_y() >= self.size
         {
             return Err(SynthError::OutOfBounds);
         }
@@ -77,7 +75,7 @@ impl Cauldron {
             }
         }
         // score is truncated into an integer
-        let score = score as usize;
+        let score = score as u32;
 
         // increment the neighbours of this shape
         let neighbour_offsets = shape.get_neighbouring_tiles();
@@ -87,7 +85,7 @@ impl Cauldron {
             let position_y = placement_y as isize + neighbour_y;
 
             if !(0..self.size as isize).contains(&position_x)
-                || !(0..self.height() as isize).contains(&position_y)
+                || !(0..self.size as isize).contains(&position_y)
             {
                 continue;
             }

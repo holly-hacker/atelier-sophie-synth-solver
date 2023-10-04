@@ -1,15 +1,15 @@
 use crate::{Cauldron, Color, ColorScoreSet, CoverageInfo, Material};
 
 impl ColorScoreSet {
-    pub fn get(&self, color: Color) -> usize {
+    pub fn get(&self, color: Color) -> u32 {
         self.scores[color.get_index()]
     }
 
-    pub fn get_mut(&mut self, color: Color) -> &mut usize {
+    pub fn get_mut(&mut self, color: Color) -> &mut u32 {
         &mut self.scores[color.get_index()]
     }
 
-    fn into_colors(self) -> [(Color, usize); 5] {
+    fn into_colors(self) -> [(Color, u32); 5] {
         [
             (Color::from_index(0), self.scores[0]),
             (Color::from_index(1), self.scores[1]),
@@ -24,24 +24,24 @@ impl ColorScoreSet {
         items: &[Material],
         coverage: &CoverageInfo,
         playfield: &Cauldron,
-    ) -> usize {
+    ) -> u32 {
         self.into_iter()
             .map(|(color, color_score)| {
                 let base = items
                     .iter()
                     .filter(|i| i.color == color)
                     .map(|i| i.effect_value)
-                    .sum::<usize>();
+                    .sum::<u32>();
                 let ratio = coverage.get_color_ratio_conditional(color, playfield);
                 (base + color_score) as f32 * (1. + ratio)
             })
-            .map(|f| f as usize)
+            .map(|f| f as u32)
             .sum()
     }
 }
 
 impl IntoIterator for ColorScoreSet {
-    type Item = (Color, usize);
+    type Item = (Color, u32);
     type IntoIter = std::array::IntoIter<Self::Item, 5>;
 
     fn into_iter(self) -> Self::IntoIter {

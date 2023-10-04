@@ -6,7 +6,7 @@ impl CoverageInfo {
         self
     }
 
-    pub fn get_color(&self, color: Color) -> usize {
+    pub fn get_color(&self, color: Color) -> u32 {
         self.coverage[color.get_index()]
     }
 
