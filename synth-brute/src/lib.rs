@@ -7,6 +7,7 @@ mod impl_coverage;
 mod impl_material;
 mod impl_placement;
 mod impl_shape;
+mod impl_shape_neighbours;
 
 pub use tinyvec;
 
@@ -76,7 +77,10 @@ pub struct Material {
 
 /// A shape in a 3x3 grid.
 #[derive(Copy, Clone)]
-pub struct Shape(pub [[bool; Self::WIDTH]; Self::HEIGHT]);
+pub struct Shape(u16);
+
+#[derive(Default)]
+pub struct ShapeNeighbours(u32);
 
 /// An item effect that can be reached by getting certain item effect levels.
 pub struct Goal {

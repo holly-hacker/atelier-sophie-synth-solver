@@ -48,7 +48,7 @@ impl Cauldron {
         // apply the shape to the playfield and count score
         let mut score = 0.;
         for (shape_y, shape_x) in (0..Shape::HEIGHT).cartesian_product(0..Shape::WIDTH) {
-            if shape.0[shape_y][shape_x] {
+            if shape.get(shape_x, shape_y) {
                 let tile = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .expect("cannot place item on unavailable tile");
@@ -78,9 +78,9 @@ impl Cauldron {
         let score = score as u32;
 
         // increment the neighbours of this shape
-        let neighbour_offsets = shape.get_neighbouring_tiles();
+        let neighbours = shape.get_neighbours();
 
-        for (neighbour_x, neighbour_y) in neighbour_offsets {
+        for (neighbour_x, neighbour_y) in neighbours.into_iter() {
             let position_x = placement_x as isize + neighbour_x;
             let position_y = placement_y as isize + neighbour_y;
 
