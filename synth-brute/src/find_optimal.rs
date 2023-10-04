@@ -1,6 +1,8 @@
 use crate::*;
 
-#[derive(Debug, Clone)]
+use tinyvec::ArrayVec;
+
+#[derive(Debug, Clone, Default)]
 pub struct Move {
     pub material_index: (usize, usize),
     pub placement: Placement,
@@ -9,7 +11,7 @@ pub struct Move {
 #[derive(Debug, PartialEq, Eq)]
 pub struct GoalResult {
     /// The amount of thresholds that are met for each goal.
-    pub scores: Vec<usize>,
+    pub scores: ArrayVec<[usize; MAX_GOALS]>,
 }
 
 impl GoalResult {
@@ -38,12 +40,16 @@ pub fn find_optimal_routes(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
-) -> Vec<(GoalResult, Vec<Move>)> {
+) -> Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)> {
     assert_eq!(materials.len(), goals.len());
 
-    let path: Vec<Move> = vec![];
-    let score_sets = vec![ColorScoreSet::default(); materials.len()];
-    let mut max_scores = vec![];
+    let path: ArrayVec<[Move; MAX_ITEMS]> = Default::default();
+    let mut score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]> = Default::default();
+    for _ in 0..materials.len() {
+        score_sets.push(Default::default());
+    }
+
+    let mut max_scores = Default::default();
     find_optimal_recursive(
         playfield,
         materials,
@@ -60,9 +66,9 @@ fn find_optimal_recursive(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
-    path: Vec<Move>,
-    score_sets: Vec<ColorScoreSet>,
-    max_scores: &mut Vec<(GoalResult, Vec<Move>)>,
+    path: ArrayVec<[Move; MAX_ITEMS]>,
+    score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
+    max_scores: &mut Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>,
 ) {
     if path.len() == materials.iter().map(|m| m.len()).sum::<usize>() {
         let coverage = playfield.calculate_coverage();
@@ -70,7 +76,7 @@ fn find_optimal_recursive(
             .iter()
             .enumerate()
             .map(|(i, s)| s.calculate_score(&materials[i], &coverage, playfield))
-            .collect::<Vec<_>>();
+            .collect::<ArrayVec<[_; MAX_GOALS]>>();
         let current_results = GoalResult::from_scores(&scores, goals);
 
         max_scores.retain(|r| !current_results.is_strictly_better(&r.0));
@@ -104,7 +110,7 @@ fn find_optimal_recursive(
                     placement,
                 });
                 let mut new_playfield = playfield.clone();
-                let mut new_score_sets = score_sets.clone();
+                let mut new_score_sets = score_sets;
                 if new_playfield
                     .place(
                         materials,
@@ -131,6 +137,7 @@ fn find_optimal_recursive(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tinyvec::array_vec;
 
     macro_rules! is_strictly_better {
         (better: $(($a:expr, $b:expr),)*) => {
@@ -149,16 +156,16 @@ mod tests {
     fn test_strictly_better() {
         is_strictly_better![
             better:
-            (vec![1, 1, 1], vec![1, 0, 1]),
-            (vec![1, 1, 1], vec![0, 1, 1]),
-            (vec![1, 1, 1], vec![0, 0, 1]),
-            (vec![1, 0, 0], vec![0, 0, 0]),
+            (array_vec![1, 1, 1], array_vec![1, 0, 1]),
+            (array_vec![1, 1, 1], array_vec![0, 1, 1]),
+            (array_vec![1, 1, 1], array_vec![0, 0, 1]),
+            (array_vec![1, 0, 0], array_vec![0, 0, 0]),
         ];
         is_strictly_better![
             not better:
-            (vec![1, 1, 1], vec![2, 0, 0]),
-            (vec![1, 0, 1], vec![1, 1, 0]),
-            (vec![0, 0, 1], vec![2, 0, 0]),
+            (array_vec![1, 1, 1], array_vec![2, 0, 0]),
+            (array_vec![1, 0, 1], array_vec![1, 1, 0]),
+            (array_vec![0, 0, 1], array_vec![2, 0, 0]),
         ];
     }
 }

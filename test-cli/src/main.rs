@@ -2,7 +2,7 @@ use synth_brute::{errors::SynthError, *};
 
 macro_rules! tiles {
     ($($color:ident $level:expr,)*) => {
-        vec![
+        tinyvec::array_vec![[Option<Tile>; 6 * 6] =>
             $(tile!($color $level),)*
         ]
     };

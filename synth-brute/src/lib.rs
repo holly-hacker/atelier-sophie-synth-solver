@@ -8,6 +8,18 @@ mod impl_material;
 mod impl_placement;
 mod impl_shape;
 
+pub use tinyvec;
+
+/// The maximum amount of item groups/goals that can be in a game.
+pub const MAX_GOALS: usize = 4;
+
+/// The max amount of items in a single item group.
+pub const MAX_ITEMS_IN_GROUP: usize = 5;
+
+pub const MAX_ITEMS: usize = MAX_GOALS * MAX_ITEMS_IN_GROUP;
+
+// TODO: what is the actual practical amount of items that can be in a game?
+
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Color {
     /// Fire
@@ -23,7 +35,7 @@ pub enum Color {
 }
 
 /// The placement of a material on the playfield.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct Placement {
     /// The index in the playfield where the item is placed.
     pub index: usize,
@@ -36,7 +48,7 @@ pub struct Cauldron {
     /// The panel size of a cauldron, eg. 4x4, 5x5 or 6x6.
     pub size: usize,
     /// The individual tiles of a cauldron, or None if the tile is a hole.
-    pub tiles: Vec<Option<Tile>>, // TODO: maybe use const generic? size should be 4x4, 5x5 or 6x6
+    pub tiles: tinyvec::ArrayVec<[Option<Tile>; 6 * 6]>, // TODO: maybe use const generic? size should be 4x4, 5x5 or 6x6
 }
 
 /// A tile in the cauldron's playfield.

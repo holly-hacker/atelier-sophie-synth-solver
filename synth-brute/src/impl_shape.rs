@@ -1,10 +1,16 @@
 use itertools::Itertools;
 
 use crate::*;
+use tinyvec::ArrayVec;
 
 impl Shape {
     pub const WIDTH: usize = 3;
     pub const HEIGHT: usize = 3;
+
+    /// The max amount of neighbouring tiles when using a 3x3 shape.
+    ///
+    /// This number comes from a shape where the 4 corners are filled in.
+    const MAX_NEIGHBOUR_TILES: usize = 21;
 
     pub fn from_binary(arr: [u8; 3]) -> Self {
         Self([
@@ -29,11 +35,11 @@ impl Shape {
     // TODO: interesting optimization candidate after we remove heap allocs
     // - we can calculate the maximum number of tiles that can be covered by a shape
     // - it is likely faster to query individual tiles rather than get a list
-    pub fn get_neighbouring_tiles(&self) -> Vec<(isize, isize)> {
+    pub fn get_neighbouring_tiles(&self) -> ArrayVec<[(isize, isize); Self::MAX_NEIGHBOUR_TILES]> {
         let width = Self::WIDTH as isize;
         let height = Self::HEIGHT as isize;
 
-        let mut neighbours = Vec::new();
+        let mut neighbours = ArrayVec::default();
         'a: for (probe_y, probe_x) in (-1..=height).cartesian_product(-1..=width) {
             if (0..width).contains(&probe_x) && (0..height).contains(&probe_y) {
                 // coordinate is inside the shape boundaries
