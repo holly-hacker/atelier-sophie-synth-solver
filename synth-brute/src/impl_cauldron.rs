@@ -31,6 +31,7 @@ impl Cauldron {
         material_groups: &[Vec<Material>],
         item_index: (usize, usize),
         placement: Placement,
+        allow_overlap: bool,
         scores: &mut [ColorScoreSet],
     ) -> Result<(), SynthError> {
         debug_assert_eq!(material_groups.len(), scores.len());
@@ -56,8 +57,11 @@ impl Cauldron {
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .expect("cannot place item on unavailable tile");
                 if tile.played_color.is_some() {
-                    // TODO: implement tile overlap
-                    return Err(SynthError::DisallowedOverlap);
+                    if allow_overlap {
+                        todo!("implement tile overlap");
+                    } else {
+                        return Err(SynthError::DisallowedOverlap);
+                    }
                 }
                 tile.played_color = Some(material.color);
 

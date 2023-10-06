@@ -2,6 +2,14 @@ use crate::*;
 
 use tinyvec::ArrayVec;
 
+#[derive(Default)]
+pub struct SearchProperties {
+    /// The allowed transformations
+    pub transformations: TransformationType,
+    /// Whether
+    pub allow_overlaps: bool,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Move {
     pub material_index: (usize, usize),
@@ -35,11 +43,11 @@ impl GoalResult {
     }
 }
 
-// TODO: pass configuration to allow overlaps/transformations
 pub fn find_optimal_routes(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
+    properties: &SearchProperties,
 ) -> Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)> {
     assert_eq!(materials.len(), goals.len());
 
@@ -56,6 +64,7 @@ pub fn find_optimal_routes(
         playfield,
         materials,
         goals,
+        properties,
         path,
         score_sets,
         &mut max_scores,
@@ -68,6 +77,7 @@ fn find_optimal_recursive(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
+    properties: &SearchProperties,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>,
@@ -103,37 +113,86 @@ fn find_optimal_recursive(
                 continue;
             }
 
-            // TODO: also iterate over possible transformations of the tile (make sure to dedupe too)
-            for playfield_index in 0..playfield.tiles.len() {
-                let placement = Placement::new(playfield_index, None);
-                let mut new_path = path.clone();
-                new_path.push(Move {
-                    material_index: (material_group_index, material_index),
-                    placement,
-                });
-                let mut new_playfield = playfield.clone();
-                let mut new_score_sets = score_sets;
-                if new_playfield
-                    .place(
-                        materials,
-                        (material_group_index, material_index),
+            // TODO: also iterate over possible transformations of the tile
+            // TODO: make sure to dedupe too
+            for transformation in generate_transformations(
+                &materials[material_group_index][material_index].shape,
+                properties.transformations,
+            ) {
+                for playfield_index in 0..playfield.tiles.len() {
+                    let placement = Placement::new(playfield_index, transformation);
+                    let mut new_path = path.clone();
+                    new_path.push(Move {
+                        material_index: (material_group_index, material_index),
                         placement,
-                        &mut new_score_sets,
-                    )
-                    .is_ok()
-                {
-                    find_optimal_recursive(
-                        &new_playfield,
-                        materials,
-                        goals,
-                        new_path,
-                        new_score_sets,
-                        max_scores,
-                    );
+                    });
+                    let mut new_playfield = playfield.clone();
+                    let mut new_score_sets = score_sets;
+                    if new_playfield
+                        .place(
+                            materials,
+                            (material_group_index, material_index),
+                            placement,
+                            properties.allow_overlaps,
+                            &mut new_score_sets,
+                        )
+                        .is_ok()
+                    {
+                        find_optimal_recursive(
+                            &new_playfield,
+                            materials,
+                            goals,
+                            properties,
+                            new_path,
+                            new_score_sets,
+                            max_scores,
+                        );
+                    }
                 }
             }
         }
     }
+}
+
+// at most, this should return 4 permutations (for rotation)
+fn generate_transformations(
+    shape: &Shape,
+    transformation_type: TransformationType,
+) -> ArrayVec<[Option<Transformation>; 4]> {
+    let mut ret = ArrayVec::new();
+    ret.push(None);
+
+    // we apply the transformation first to see if there's an actual change, to prevent doing duplicate work
+    // PERF: this can probably be micro-optimized to avoid having to apply the actual transformation
+    match transformation_type {
+        TransformationType::None => {}
+        TransformationType::FlipHorizontal => {
+            if shape.apply_transformation(Transformation::FlipHorizontal) != *shape {
+                ret.push(Some(Transformation::FlipHorizontal));
+            }
+        }
+        TransformationType::FlipVertical => {
+            if shape.apply_transformation(Transformation::FlipVertical) != *shape {
+                ret.push(Some(Transformation::FlipVertical));
+            }
+        }
+        TransformationType::Rotate => {
+            if shape.apply_transformation(Transformation::Rotate90) != *shape {
+                ret.push(Some(Transformation::Rotate90));
+
+                if shape.apply_transformation(Transformation::Rotate90)
+                    != shape.apply_transformation(Transformation::Rotate270)
+                {
+                    ret.push(Some(Transformation::Rotate270));
+                }
+            }
+            if shape.apply_transformation(Transformation::Rotate180) != *shape {
+                ret.push(Some(Transformation::Rotate180));
+            }
+        }
+    };
+
+    ret
 }
 
 #[cfg(test)]

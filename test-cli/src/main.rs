@@ -9,9 +9,14 @@ fn main() -> Result<(), SynthError> {
         vec![material::beehive()],
         vec![material::broken_stone()],
     ];
+    let search_properties = find_optimal::SearchProperties {
+        transformations: TransformationType::Rotate,
+        allow_overlaps: false,
+    };
 
     let time_before = std::time::Instant::now();
-    let optimal_routes = find_optimal::find_optimal_routes(&cauldron, &materials, &goals);
+    let optimal_routes =
+        find_optimal::find_optimal_routes(&cauldron, &materials, &goals, &search_properties);
     let elapsed = time_before.elapsed();
     println!(
         "Found {} optimal routes in {elapsed:?}",
@@ -34,6 +39,7 @@ fn main() -> Result<(), SynthError> {
                 &materials,
                 move_.material_index,
                 move_.placement,
+                search_properties.allow_overlaps,
                 &mut scores,
             )?;
             print_playfield_coverage(&cauldron);

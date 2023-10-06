@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use synth_brute::{utils::test_data::*, *};
+use synth_brute::{find_optimal::SearchProperties, utils::test_data::*, *};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("apply 4 placements in 5x5 cauldron", |b| {
@@ -20,7 +20,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
             for (item, placement) in placements {
                 cauldron
-                    .place(&materials, item, placement, &mut scores)
+                    .place(&materials, item, placement, false, &mut scores)
                     .unwrap();
             }
         })
@@ -34,11 +34,13 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         ];
         let cauldron = cauldron::uni_bag_5x5_bonus1();
         let goals = goals::uni_bag();
+        let properties = SearchProperties::default();
         b.iter(|| {
             black_box(find_optimal::find_optimal_routes(
                 black_box(&cauldron),
                 black_box(&materials),
                 black_box(&goals),
+                black_box(&properties),
             ));
         })
     });

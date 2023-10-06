@@ -53,6 +53,15 @@ pub struct Cauldron {
     pub tiles: tinyvec::ArrayVec<[Option<Tile>; 6 * 6]>, // TODO: maybe use const generic? size should be 4x4, 5x5 or 6x6
 }
 
+#[derive(Default, Clone, Copy)]
+pub enum TransformationType {
+    #[default]
+    None,
+    FlipHorizontal,
+    FlipVertical,
+    Rotate,
+}
+
 /// A tile in the cauldron's playfield.
 #[derive(Copy, Clone)]
 pub struct Tile {

@@ -32,22 +32,22 @@ fn test_calculation() {
 
     let placement1 = Placement::new(2 + 5, None);
     cauldron
-        .place(&materials, (0, 0), placement1, &mut scores)
+        .place(&materials, (0, 0), placement1, true, &mut scores)
         .unwrap();
 
     let placement2 = Placement::new(1 + 5 * 3, None);
     cauldron
-        .place(&materials, (1, 0), placement2, &mut scores)
+        .place(&materials, (1, 0), placement2, true, &mut scores)
         .unwrap();
 
     let placement3 = Placement::new(3 + 5 * 2, None);
     cauldron
-        .place(&materials, (2, 0), placement3, &mut scores)
+        .place(&materials, (2, 0), placement3, true, &mut scores)
         .unwrap();
 
     let placement4 = Placement::new(0, None);
     cauldron
-        .place(&materials, (0, 1), placement4, &mut scores)
+        .place(&materials, (0, 1), placement4, true, &mut scores)
         .unwrap();
 
     let coverage = cauldron.calculate_coverage();
