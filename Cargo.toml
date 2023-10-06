@@ -1,3 +1,15 @@
 [workspace]
 members = ["test-cli", "synth-brute"]
 resolver = "2"
+
+[profile.dev]
+opt-level = 1
+
+[profile.profile]
+inherits = "release"
+debug = 1
+
+[profile.test]
+# apply basic optimizations. this brings runtime of a basic find_optimal from 2 seconds to 141ms.
+# opt-level 2 and 3 don't give considerable improvements
+opt-level = 1
