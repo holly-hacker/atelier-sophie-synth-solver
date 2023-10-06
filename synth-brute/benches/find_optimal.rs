@@ -44,6 +44,30 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             ));
         })
     });
+
+    c.bench_function("find optimal routes with perfect solution", |b| {
+        let perfect_material = Material {
+            color: Color::White,
+            effect_value: 1000,
+            shape: Shape::from_binary([0b100, 0b100, 0b100]),
+        };
+        let materials = vec![
+            vec![perfect_material, material::uni()],
+            vec![perfect_material, material::beehive()],
+            vec![perfect_material, material::broken_stone()],
+        ];
+        let cauldron = cauldron::uni_bag_5x5_bonus1();
+        let goals = goals::uni_bag();
+        let properties = SearchProperties::default();
+        b.iter(|| {
+            black_box(find_optimal::find_optimal_routes(
+                black_box(&cauldron),
+                black_box(&materials),
+                black_box(&goals),
+                black_box(&properties),
+            ));
+        })
+    });
 }
 
 criterion_group!(benches, criterion_benchmark);

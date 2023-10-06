@@ -81,7 +81,7 @@ fn find_optimal_recursive(
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>,
-) {
+) -> bool {
     if path.len() == materials.iter().map(|m| m.len()).sum::<usize>() {
         let coverage = playfield.calculate_coverage();
         let scores = score_sets
@@ -99,10 +99,20 @@ fn find_optimal_recursive(
                     .iter()
                     .all(|ms| !ms.0.is_strictly_better(&current_results)))
         {
-            max_scores.push((current_results, path.clone()));
+            max_scores.push((current_results.clone(), path.clone()));
+
+            // check if we reached a perfect score, which is where we meet all goals
+            if current_results
+                .scores
+                .iter()
+                .zip(goals.iter().map(|g| g.effect_value_thresholds.len()))
+                .all(|(s, g)| *s == g)
+            {
+                return true;
+            }
         }
 
-        return;
+        return false;
     }
 
     for (material_group_index, material_group) in materials.iter().enumerate() {
@@ -140,7 +150,7 @@ fn find_optimal_recursive(
                         )
                         .is_ok()
                     {
-                        find_optimal_recursive(
+                        let early_exit = find_optimal_recursive(
                             &new_playfield,
                             materials,
                             goals,
@@ -149,11 +159,17 @@ fn find_optimal_recursive(
                             new_score_sets,
                             max_scores,
                         );
+
+                        if early_exit {
+                            return true;
+                        }
                     }
                 }
             }
         }
     }
+
+    false
 }
 
 // at most, this should return 4 permutations (for rotation)
