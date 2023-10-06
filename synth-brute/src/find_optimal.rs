@@ -8,7 +8,7 @@ pub struct Move {
     pub placement: Placement,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GoalResult {
     /// The amount of thresholds that are met for each goal.
     pub scores: ArrayVec<[usize; MAX_GOALS]>,
