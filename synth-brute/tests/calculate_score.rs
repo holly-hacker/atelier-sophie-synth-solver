@@ -1,31 +1,5 @@
 use synth_brute::*;
 
-macro_rules! tiles {
-    ($($color:ident $level:expr,)*) => {
-        tinyvec::array_vec![[Option<Tile>; 6 * 6] =>
-            $(tile!($color $level),)*
-        ]
-    };
-}
-
-macro_rules! tile {
-    (R $level:expr) => {tile!(Red $level)};
-    (B $level:expr) => {tile!(Blue $level)};
-    (G $level:expr) => {tile!(Green $level)};
-    (Y $level:expr) => {tile!(Yellow $level)};
-    (W $level:expr) => {tile!(White $level)};
-    ($color:ident $level:expr) => {
-        Some(Tile {
-            color: Color::$color,
-            level: $level,
-            played_color: None,
-        })
-    };
-    (None 0) => {
-        None
-    };
-}
-
 #[test]
 fn test_calculation() {
     let materials = vec![

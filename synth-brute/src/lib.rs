@@ -8,6 +8,7 @@ mod impl_material;
 mod impl_placement;
 mod impl_shape;
 mod impl_shape_neighbours;
+pub mod utils;
 
 pub use tinyvec;
 
