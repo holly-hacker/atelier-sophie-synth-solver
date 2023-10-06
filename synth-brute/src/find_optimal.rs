@@ -105,7 +105,7 @@ fn find_optimal_recursive(
 
             // TODO: also iterate over possible transformations of the tile (make sure to dedupe too)
             for playfield_index in 0..playfield.tiles.len() {
-                let placement = Placement::new(playfield_index, ());
+                let placement = Placement::new(playfield_index, None);
                 let mut new_path = path.clone();
                 new_path.push(Move {
                     material_index: (material_group_index, material_index),

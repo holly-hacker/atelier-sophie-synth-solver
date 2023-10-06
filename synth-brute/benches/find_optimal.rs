@@ -9,10 +9,10 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             vec![material::broken_stone()],
         ];
         let placements = [
-            ((0, 0), Placement::new(2 + 5, ())),
-            ((1, 0), Placement::new(1 + 5 * 3, ())),
-            ((2, 0), Placement::new(3 + 5 * 2, ())),
-            ((0, 1), Placement::new(0, ())),
+            ((0, 0), Placement::new(2 + 5, None)),
+            ((1, 0), Placement::new(1 + 5 * 3, None)),
+            ((2, 0), Placement::new(3 + 5 * 2, None)),
+            ((0, 1), Placement::new(0, None)),
         ];
         b.iter(|| {
             let mut cauldron = cauldron::uni_bag_5x5_bonus1();

@@ -41,7 +41,7 @@ pub enum Color {
 pub struct Placement {
     /// The index in the playfield where the item is placed.
     pub index: usize,
-    pub transformations: (), // TODO: flipping v/h, rotating
+    pub transformation: Option<Transformation>,
 }
 
 /// The playfield of the game.
@@ -77,11 +77,20 @@ pub struct Material {
 }
 
 /// A shape in a 3x3 grid.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Shape(u16);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ShapeNeighbours(u32);
+
+#[derive(Debug, Copy, Clone)]
+pub enum Transformation {
+    FlipHorizontal,
+    FlipVertical,
+    Rotate90,
+    Rotate180,
+    Rotate270,
+}
 
 /// An item effect that can be reached by getting certain item effect levels.
 pub struct Goal {

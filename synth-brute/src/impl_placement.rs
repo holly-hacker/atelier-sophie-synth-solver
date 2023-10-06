@@ -1,10 +1,10 @@
 use crate::*;
 
 impl Placement {
-    pub fn new(index: usize, transformations: ()) -> Self {
+    pub fn new(index: usize, transformation: Option<Transformation>) -> Self {
         Self {
             index,
-            transformations,
+            transformation,
         }
     }
 }

@@ -36,7 +36,10 @@ impl Cauldron {
         debug_assert_eq!(material_groups.len(), scores.len());
 
         let material = material_groups[item_index.0][item_index.1];
-        let shape = &material.shape;
+        let shape = match placement.transformation {
+            Some(transformation) => material.shape.apply_transformation(transformation),
+            None => material.shape.normalize(),
+        };
         let (placement_x, placement_y) = self.get_position(placement.index);
 
         if placement_x + shape.get_max_x() >= self.size
