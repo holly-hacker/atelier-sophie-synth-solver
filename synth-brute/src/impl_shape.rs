@@ -33,10 +33,6 @@ impl Shape {
         self.0 & (1 << index) != 0
     }
 
-    // TODO: interesting optimization candidate after we remove heap allocs
-    // - we can calculate the maximum number of tiles that can be covered by a shape
-    // - it is likely faster to query individual tiles rather than get a list
-    // TODO: just cache it instead! :D
     pub fn get_neighbours(&self) -> ShapeNeighbours {
         NEIGHBOUR_CACHE.get_or_init(|| {
             let mut cache = [ShapeNeighbours::default(); 512];
