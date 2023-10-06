@@ -101,6 +101,8 @@ fn find_optimal_recursive(
         {
             max_scores.push((current_results, path.clone()));
         }
+
+        return;
     }
 
     for (material_group_index, material_group) in materials.iter().enumerate() {
