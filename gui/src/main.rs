@@ -2,6 +2,7 @@
 
 mod app;
 mod components;
+mod util;
 
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {

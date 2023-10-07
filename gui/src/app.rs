@@ -6,6 +6,7 @@ use synth_solver::{
 };
 
 use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
+use crate::util::synth_color_to_egui_color;
 
 pub struct App {
     cauldron: CauldronComponent,
@@ -134,15 +135,5 @@ fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron) {
                 ui.label(text);
             }
         });
-    }
-}
-
-fn synth_color_to_egui_color(color: synth_solver::Color) -> egui::Color32 {
-    match color {
-        synth_solver::Color::Red => egui::Color32::from_rgb(255, 0, 0),
-        synth_solver::Color::Blue => egui::Color32::from_rgb(0, 0, 255),
-        synth_solver::Color::Green => egui::Color32::from_rgb(0, 255, 0),
-        synth_solver::Color::Yellow => egui::Color32::from_rgb(255, 255, 0),
-        synth_solver::Color::White => egui::Color32::from_rgb(255, 255, 255),
     }
 }

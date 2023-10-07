@@ -1,6 +1,8 @@
-use egui::RichText;
+use egui::{Button, FontSelection, RichText, Rounding, Vec2};
 
-use synth_solver::{Goal, Material};
+use synth_solver::{Color, Goal, Material};
+
+use crate::util::synth_color_to_egui_color;
 
 use super::input_shape;
 
@@ -12,7 +14,7 @@ pub struct InputComponent {
 impl InputComponent {
     pub fn render(&mut self, ui: &mut egui::Ui) {
         ui.heading("Materials");
-        materials_input(ui, &mut self.materials);
+        materials_list_input(ui, &mut self.materials);
         ui.add_space(16.);
 
         ui.heading("Goals");
@@ -54,7 +56,7 @@ impl Default for InputComponent {
     }
 }
 
-fn materials_input(ui: &mut egui::Ui, materials: &mut Vec<Vec<Material>>) {
+fn materials_list_input(ui: &mut egui::Ui, materials: &mut Vec<Vec<Material>>) {
     let mut to_remove = vec![];
     for (group_idx, material_group) in materials.iter_mut().enumerate() {
         ui.push_id(group_idx, |ui| {
@@ -86,7 +88,7 @@ fn materials_group_input(ui: &mut egui::Ui, materials: &mut Vec<Material>) {
     for (mat_idx, material) in materials.iter_mut().enumerate() {
         ui.push_id(mat_idx, |ui| {
             ui.horizontal(|ui| {
-                color_combobox(ui, &mut material.color);
+                color_button_group(ui, &mut material.color);
                 ui.add(
                     egui::DragValue::new(&mut material.effect_value)
                         .speed(1.0)
@@ -156,21 +158,39 @@ fn goals_input(ui: &mut egui::Ui, goals: &mut Vec<Goal>) {
     }
 }
 
-fn color_combobox(ui: &mut egui::Ui, color: &mut synth_solver::Color) {
-    egui::ComboBox::from_id_source("color combobox")
-        .selected_text(format!("{color:?}"))
-        .show_ui(ui, |ui| {
-            ui.selectable_value(color, synth_solver::Color::Red, "Red");
-            ui.selectable_value(color, synth_solver::Color::Green, "Green");
-            ui.selectable_value(color, synth_solver::Color::Blue, "Blue");
-            ui.selectable_value(color, synth_solver::Color::Yellow, "Yellow");
-            ui.selectable_value(color, synth_solver::Color::White, "White");
-        });
+fn color_button_group(ui: &mut egui::Ui, input_color: &mut Color) {
+    ui.horizontal(|ui| {
+        for color in [
+            Color::Red,
+            Color::Blue,
+            Color::Green,
+            Color::Yellow,
+            Color::White,
+        ] {
+            // some hackery to get a round button without manual padding
+            let font_id = FontSelection::Default.resolve(ui.style());
+            let size = Vec2::splat(ui.fonts(|fonts| fonts.row_height(&font_id)))
+                + ui.spacing().button_padding;
+            let button = Button::new("")
+                .fill(synth_color_to_egui_color(color))
+                .min_size(size);
+
+            let button = if color == *input_color {
+                button.selected(true).rounding(Rounding::ZERO)
+            } else {
+                button.selected(false).rounding(Rounding::same(999.))
+            };
+
+            if ui.add(button).clicked() {
+                *input_color = color;
+            }
+        }
+    });
 }
 
 fn default_material() -> Material {
     Material {
-        color: synth_solver::Color::Red,
+        color: Color::Red,
         effect_value: 10,
         shape: synth_solver::Shape::from_binary([0b110, 0b100, 0b000]),
     }
