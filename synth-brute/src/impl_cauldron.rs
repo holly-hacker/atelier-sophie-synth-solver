@@ -1,6 +1,7 @@
-use crate::{errors::SynthError, *};
-
 use itertools::Itertools;
+
+use crate::find_optimal::Move;
+use crate::{errors::SynthError, *};
 
 impl Cauldron {
     pub fn get_position(&self, index: usize) -> (usize, usize) {
@@ -24,6 +25,26 @@ impl Cauldron {
         let index = y * self.size + x;
 
         self.tiles.get_mut(index).unwrap().as_mut()
+    }
+
+    pub fn place_all(
+        &mut self,
+        material_groups: &[Vec<Material>],
+        moves: &[Move],
+        allow_overlap: bool,
+    ) -> Result<Vec<ColorScoreSet>, SynthError> {
+        let mut scores = vec![ColorScoreSet::default(); material_groups.len()];
+        for move_ in moves {
+            self.place(
+                material_groups,
+                move_.material_index,
+                move_.placement,
+                allow_overlap,
+                &mut scores,
+            )?;
+        }
+
+        Ok(scores)
     }
 
     pub fn place(

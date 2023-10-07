@@ -1,3 +1,5 @@
+pub use tinyvec;
+
 pub mod errors;
 pub mod find_optimal;
 mod impl_cauldron;
@@ -10,8 +12,6 @@ mod impl_shape;
 mod impl_shape_neighbours;
 pub mod utils;
 
-pub use tinyvec;
-
 /// The maximum amount of item groups/goals that can be in a game.
 pub const MAX_GOALS: usize = 4;
 
@@ -22,7 +22,7 @@ pub const MAX_ITEMS: usize = MAX_GOALS * MAX_ITEMS_IN_GROUP;
 
 // TODO: what is the actual practical amount of items that can be in a game?
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Color {
     /// Fire
     Red,
@@ -53,7 +53,7 @@ pub struct Cauldron {
     pub tiles: tinyvec::ArrayVec<[Option<Tile>; 6 * 6]>, // TODO: maybe use const generic? size should be 4x4, 5x5 or 6x6
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum TransformationType {
     #[default]
     None,
@@ -75,7 +75,7 @@ pub struct Tile {
 }
 
 /// An item that can be placed in the cauldron.
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Material {
     pub color: Color,
     /// The base value of an item that gets added to the score, before applying the coverage
@@ -102,6 +102,7 @@ pub enum Transformation {
 }
 
 /// An item effect that can be reached by getting certain item effect levels.
+#[derive(Debug)]
 pub struct Goal {
     /// Thresholds where the goal is considered met.
     pub effect_value_thresholds: Vec<u32>,

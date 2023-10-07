@@ -1,5 +1,5 @@
 [workspace]
-members = ["test-cli", "synth-brute"]
+members = ["synth-brute", "gui"]
 resolver = "2"
 
 [profile.dev]

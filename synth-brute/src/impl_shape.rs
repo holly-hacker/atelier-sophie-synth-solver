@@ -20,10 +20,38 @@ impl Shape {
     }
 
     pub fn from_binary(arr: [u8; 3]) -> Self {
+        debug_assert_eq!(Self::WIDTH, 3);
+        debug_assert_eq!(Self::HEIGHT, 3);
+
         let bits_rev = (arr[2] as u16) | ((arr[1] as u16) << 3) | ((arr[0] as u16) << 6);
         let bits = bits_rev.reverse_bits() >> (u16::BITS as usize - Self::WIDTH * Self::HEIGHT);
 
         Self(bits)
+    }
+
+    pub fn from_matrix(matrix: [[bool; 3]; 3]) -> Self {
+        debug_assert_eq!(Self::WIDTH, 3);
+        debug_assert_eq!(Self::HEIGHT, 3);
+
+        Self::from_binary([
+            (matrix[0][0] as u8) << 2 | (matrix[0][1] as u8) << 1 | (matrix[0][2] as u8),
+            (matrix[1][0] as u8) << 2 | (matrix[1][1] as u8) << 1 | (matrix[1][2] as u8),
+            (matrix[2][0] as u8) << 2 | (matrix[2][1] as u8) << 1 | (matrix[2][2] as u8),
+        ])
+    }
+
+    pub fn to_matrix(&self) -> [[bool; 3]; 3] {
+        debug_assert_eq!(Self::WIDTH, 3);
+        debug_assert_eq!(Self::HEIGHT, 3);
+
+        let mut matrix = [[false; 3]; 3];
+        #[allow(clippy::needless_range_loop)]
+        for x in 0..Self::WIDTH {
+            for y in 0..Self::HEIGHT {
+                matrix[y][x] = self.get(x, y);
+            }
+        }
+        matrix
     }
 
     pub fn get(&self, x: usize, y: usize) -> bool {

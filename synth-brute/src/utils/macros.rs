@@ -7,15 +7,15 @@ macro_rules! tiles {
     (W $level:expr) => {tiles!(White $level)};
 
     ($color:ident $level:expr) => {
-        Some(Tile {
-            color: Color::$color,
+        Some($crate::Tile {
+            color: $crate::Color::$color,
             level: $level,
             played_color: None,
         })
     };
 
     ($($color:ident $level:expr,)*) => {
-        tinyvec::array_vec![[Option<Tile>; 6 * 6] =>
+        $crate::tinyvec::array_vec![[Option<$crate::Tile>; 6 * 6] =>
             $(tiles!($color $level),)*
         ]
     };
