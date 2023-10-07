@@ -95,7 +95,9 @@ impl eframe::App for App {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            self.cauldron.render(ui);
+            ui.add_enabled_ui(self.results.is_none(), |ui| {
+                self.cauldron.render(ui);
+            });
         });
     }
 }

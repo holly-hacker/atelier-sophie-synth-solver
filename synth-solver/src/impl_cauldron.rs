@@ -17,14 +17,14 @@ impl Cauldron {
         *self.tiles.get(index).unwrap()
     }
 
-    pub fn get_tile_mut(&mut self, index: (usize, usize)) -> Option<&mut Tile> {
+    pub fn get_tile_mut(&mut self, index: (usize, usize)) -> &mut Option<Tile> {
         debug_assert!(index.0 < self.size);
         debug_assert!(index.1 < self.size);
 
         let (x, y) = index;
         let index = y * self.size + x;
 
-        self.tiles.get_mut(index).unwrap().as_mut()
+        self.tiles.get_mut(index).unwrap()
     }
 
     pub fn place_all(
@@ -76,6 +76,7 @@ impl Cauldron {
             if shape.get(shape_x, shape_y) {
                 let tile = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
+                    .as_mut()
                     .expect("cannot place item on unavailable tile");
                 if tile.played_color.is_some() {
                     if allow_overlap {
