@@ -1,4 +1,4 @@
-use synth_brute::*;
+use synth_solver::*;
 
 #[test]
 fn test_calculation() {

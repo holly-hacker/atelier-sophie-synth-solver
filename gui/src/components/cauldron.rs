@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use egui::RichText;
 
-use synth_brute::Cauldron;
+use synth_solver::Cauldron;
 
 pub struct CauldronComponent {
     cauldron: Cauldron,
@@ -11,7 +11,7 @@ pub struct CauldronComponent {
 impl Default for CauldronComponent {
     fn default() -> Self {
         Self {
-            cauldron: synth_brute::utils::test_data::cauldron::uni_bag_5x5_bonus1(),
+            cauldron: synth_solver::utils::test_data::cauldron::uni_bag_5x5_bonus1(),
         }
     }
 }
@@ -53,12 +53,12 @@ impl CauldronComponent {
     }
 }
 
-fn synth_color_to_egui_color(color: synth_brute::Color) -> egui::Color32 {
+fn synth_color_to_egui_color(color: synth_solver::Color) -> egui::Color32 {
     match color {
-        synth_brute::Color::Red => egui::Color32::from_rgb(255, 0, 0),
-        synth_brute::Color::Blue => egui::Color32::from_rgb(0, 0, 255),
-        synth_brute::Color::Green => egui::Color32::from_rgb(0, 255, 0),
-        synth_brute::Color::Yellow => egui::Color32::from_rgb(255, 255, 0),
-        synth_brute::Color::White => egui::Color32::from_rgb(255, 255, 255),
+        synth_solver::Color::Red => egui::Color32::from_rgb(255, 0, 0),
+        synth_solver::Color::Blue => egui::Color32::from_rgb(0, 0, 255),
+        synth_solver::Color::Green => egui::Color32::from_rgb(0, 255, 0),
+        synth_solver::Color::Yellow => egui::Color32::from_rgb(255, 255, 0),
+        synth_solver::Color::White => egui::Color32::from_rgb(255, 255, 255),
     }
 }

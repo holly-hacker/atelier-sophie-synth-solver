@@ -1,4 +1,4 @@
-use synth_brute::{utils::test_data::*, *};
+use synth_solver::{utils::test_data::*, *};
 
 #[test]
 pub fn test_basic_uni_bag() {
@@ -9,9 +9,8 @@ pub fn test_basic_uni_bag() {
         vec![material::beehive()],
         vec![material::broken_stone()],
     ];
-    let properties = find_optimal::SearchProperties::default();
-    let optimal_routes =
-        find_optimal::find_optimal_routes(&cauldron, &materials, &goals, &properties);
+    let properties = solver::SolverSettings::default();
+    let optimal_routes = solver::find_optimal_routes(&cauldron, &materials, &goals, &properties);
 
     assert_eq!(optimal_routes.len(), 2);
     assert_eq!(
@@ -41,12 +40,11 @@ pub fn test_basic_uni_bag_with_rotations() {
         vec![material::beehive()],
         vec![material::broken_stone()],
     ];
-    let properties = find_optimal::SearchProperties {
+    let properties = solver::SolverSettings {
         transformations: TransformationType::Rotate,
         allow_overlaps: false,
     };
-    let optimal_routes =
-        find_optimal::find_optimal_routes(&cauldron, &materials, &goals, &properties);
+    let optimal_routes = solver::find_optimal_routes(&cauldron, &materials, &goals, &properties);
 
     assert_eq!(optimal_routes.len(), 3);
     assert_eq!(

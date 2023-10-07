@@ -1,7 +1,6 @@
 pub use tinyvec;
 
 pub mod errors;
-pub mod find_optimal;
 mod impl_cauldron;
 mod impl_color;
 mod impl_color_score_set;
@@ -10,6 +9,7 @@ mod impl_material;
 mod impl_placement;
 mod impl_shape;
 mod impl_shape_neighbours;
+pub mod solver;
 pub mod utils;
 
 /// The maximum amount of item groups/goals that can be in a game.

@@ -1,5 +1,6 @@
 use egui::RichText;
-use synth_brute::{Goal, Material};
+
+use synth_solver::{Goal, Material};
 
 use super::input_shape;
 
@@ -155,23 +156,23 @@ fn goals_input(ui: &mut egui::Ui, goals: &mut Vec<Goal>) {
     }
 }
 
-fn color_combobox(ui: &mut egui::Ui, color: &mut synth_brute::Color) {
+fn color_combobox(ui: &mut egui::Ui, color: &mut synth_solver::Color) {
     egui::ComboBox::from_id_source("color combobox")
         .selected_text(format!("{:?}", color))
         .show_ui(ui, |ui| {
-            ui.selectable_value(color, synth_brute::Color::Red, "Red");
-            ui.selectable_value(color, synth_brute::Color::Green, "Green");
-            ui.selectable_value(color, synth_brute::Color::Blue, "Blue");
-            ui.selectable_value(color, synth_brute::Color::Yellow, "Yellow");
-            ui.selectable_value(color, synth_brute::Color::White, "White");
+            ui.selectable_value(color, synth_solver::Color::Red, "Red");
+            ui.selectable_value(color, synth_solver::Color::Green, "Green");
+            ui.selectable_value(color, synth_solver::Color::Blue, "Blue");
+            ui.selectable_value(color, synth_solver::Color::Yellow, "Yellow");
+            ui.selectable_value(color, synth_solver::Color::White, "White");
         });
 }
 
 fn default_material() -> Material {
     Material {
-        color: synth_brute::Color::Red,
+        color: synth_solver::Color::Red,
         effect_value: 10,
-        shape: synth_brute::Shape::from_binary([0b110, 0b100, 0b000]),
+        shape: synth_solver::Shape::from_binary([0b110, 0b100, 0b000]),
     }
 }
 

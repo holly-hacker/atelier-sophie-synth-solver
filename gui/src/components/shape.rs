@@ -1,4 +1,4 @@
-use synth_brute::Shape;
+use synth_solver::Shape;
 
 pub fn input_shape(ui: &mut egui::Ui, shape: &mut Shape) {
     ui.vertical(|ui| {

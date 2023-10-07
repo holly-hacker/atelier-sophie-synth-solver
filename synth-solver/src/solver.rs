@@ -1,9 +1,9 @@
-use crate::*;
-
 use tinyvec::ArrayVec;
 
+use crate::*;
+
 #[derive(Default)]
-pub struct SearchProperties {
+pub struct SolverSettings {
     /// The allowed transformations
     pub transformations: TransformationType,
     /// Whether
@@ -47,7 +47,7 @@ pub fn find_optimal_routes(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
-    properties: &SearchProperties,
+    properties: &SolverSettings,
 ) -> Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)> {
     assert_eq!(materials.len(), goals.len());
 
@@ -77,7 +77,7 @@ fn find_optimal_recursive(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
-    properties: &SearchProperties,
+    properties: &SolverSettings,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>,
@@ -215,8 +215,9 @@ fn generate_transformations(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tinyvec::array_vec;
+
+    use super::*;
 
     macro_rules! is_strictly_better {
         (better: $(($a:expr, $b:expr),)*) => {

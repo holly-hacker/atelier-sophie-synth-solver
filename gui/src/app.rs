@@ -1,17 +1,17 @@
 use egui::RichText;
 
-use synth_brute::{
-    find_optimal::{GoalResult, Move},
+use synth_solver::{
+    solver::{GoalResult, Move},
     Cauldron,
 };
 
-use crate::components::{CauldronComponent, InputComponent, SearchSettings};
+use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
 
 pub struct App {
     cauldron: CauldronComponent,
     input: InputComponent,
-    settings: SearchSettings,
-    results: Option<Vec<(GoalResult, synth_brute::tinyvec::ArrayVec<[Move; 20]>)>>,
+    settings: SolverSettingsComponent,
+    results: Option<Vec<(GoalResult, synth_solver::tinyvec::ArrayVec<[Move; 20]>)>>,
 }
 
 impl App {
@@ -41,8 +41,8 @@ impl eframe::App for App {
                 ui.label(err);
             } else {
                 ui.add_enabled_ui(self.results.is_none(), |ui| {
-                    if ui.button("Run brute-force").clicked() {
-                        let found_routes = synth_brute::find_optimal::find_optimal_routes(
+                    if ui.button("Run solver").clicked() {
+                        let found_routes = synth_solver::solver::find_optimal_routes(
                             &self.cauldron,
                             &self.input.materials,
                             &self.input.goals,
@@ -137,12 +137,12 @@ fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron) {
     }
 }
 
-fn synth_color_to_egui_color(color: synth_brute::Color) -> egui::Color32 {
+fn synth_color_to_egui_color(color: synth_solver::Color) -> egui::Color32 {
     match color {
-        synth_brute::Color::Red => egui::Color32::from_rgb(255, 0, 0),
-        synth_brute::Color::Blue => egui::Color32::from_rgb(0, 0, 255),
-        synth_brute::Color::Green => egui::Color32::from_rgb(0, 255, 0),
-        synth_brute::Color::Yellow => egui::Color32::from_rgb(255, 255, 0),
-        synth_brute::Color::White => egui::Color32::from_rgb(255, 255, 255),
+        synth_solver::Color::Red => egui::Color32::from_rgb(255, 0, 0),
+        synth_solver::Color::Blue => egui::Color32::from_rgb(0, 0, 255),
+        synth_solver::Color::Green => egui::Color32::from_rgb(0, 255, 0),
+        synth_solver::Color::Yellow => egui::Color32::from_rgb(255, 255, 0),
+        synth_solver::Color::White => egui::Color32::from_rgb(255, 255, 255),
     }
 }

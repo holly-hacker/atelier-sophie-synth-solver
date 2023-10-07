@@ -779,7 +779,7 @@ version = "0.0.0"
 dependencies = [
  "eframe",
  "egui",
- "synth-brute",
+ "synth-solver",
 ]
 
 [[package]]
@@ -1611,7 +1611,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "synth-brute"
+name = "synth-solver"
 version = "0.0.0"
 dependencies = [
  "criterion",

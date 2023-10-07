@@ -1,11 +1,11 @@
-use synth_brute::find_optimal::SearchProperties;
+use synth_solver::solver::SolverSettings;
 
 #[derive(Default)]
-pub struct SearchSettings {
-    pub props: SearchProperties,
+pub struct SolverSettingsComponent {
+    pub props: SolverSettings,
 }
 
-impl SearchSettings {
+impl SolverSettingsComponent {
     pub fn render(&mut self, ui: &mut egui::Ui) {
         ui.heading("Settings");
         ui.group(|ui| {
@@ -20,29 +20,29 @@ impl SearchSettings {
 
 fn transformations_combobox(
     ui: &mut egui::Ui,
-    transformation: &mut synth_brute::TransformationType,
+    transformation: &mut synth_solver::TransformationType,
 ) {
     egui::ComboBox::from_label("Transformation")
         .selected_text(format!("{:?}", transformation))
         .show_ui(ui, |ui| {
             ui.selectable_value(
                 transformation,
-                synth_brute::TransformationType::None,
+                synth_solver::TransformationType::None,
                 "None",
             );
             ui.selectable_value(
                 transformation,
-                synth_brute::TransformationType::FlipHorizontal,
+                synth_solver::TransformationType::FlipHorizontal,
                 "Flip H",
             );
             ui.selectable_value(
                 transformation,
-                synth_brute::TransformationType::FlipVertical,
+                synth_solver::TransformationType::FlipVertical,
                 "Flip V",
             );
             ui.selectable_value(
                 transformation,
-                synth_brute::TransformationType::Rotate,
+                synth_solver::TransformationType::Rotate,
                 "Rotate",
             );
         });

@@ -13,4 +13,4 @@ eframe = { version = "0.23.0", default-features = false, features = [
     "x11",
 ] }
 egui = "0.23.0"
-synth-brute = { path = "../synth-brute" }
+synth-solver = { path = "../synth-solver" }

@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use crate::find_optimal::Move;
+use crate::solver::Move;
 use crate::{errors::SynthError, *};
 
 impl Cauldron {

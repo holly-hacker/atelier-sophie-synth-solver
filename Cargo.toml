@@ -1,5 +1,5 @@
 [workspace]
-members = ["synth-brute", "gui"]
+members = ["synth-solver", "gui"]
 resolver = "2"
 
 [profile.dev]
