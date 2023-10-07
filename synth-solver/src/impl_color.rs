@@ -11,13 +11,13 @@ impl Color {
         }
     }
 
-    pub fn from_index(index: i32) -> Color {
+    pub fn from_index(index: i32) -> Self {
         match index {
-            0 => Color::Red,
-            1 => Color::Blue,
-            2 => Color::Green,
-            3 => Color::Yellow,
-            4 => Color::White,
+            0 => Self::Red,
+            1 => Self::Blue,
+            2 => Self::Green,
+            3 => Self::Yellow,
+            4 => Self::White,
             n => panic!("Invalid color index {n}"),
         }
     }

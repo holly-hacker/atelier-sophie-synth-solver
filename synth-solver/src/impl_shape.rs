@@ -40,7 +40,7 @@ impl Shape {
         ])
     }
 
-    pub fn to_matrix(&self) -> [[bool; 3]; 3] {
+    pub fn to_matrix(self) -> [[bool; 3]; 3] {
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);
 
@@ -54,7 +54,7 @@ impl Shape {
         matrix
     }
 
-    pub fn get(&self, x: usize, y: usize) -> bool {
+    pub fn get(self, x: usize, y: usize) -> bool {
         debug_assert!(x < Self::WIDTH);
         debug_assert!(y < Self::HEIGHT);
 
@@ -62,7 +62,7 @@ impl Shape {
         self.0 & (1 << index) != 0
     }
 
-    pub fn get_neighbours(&self) -> ShapeNeighbours {
+    pub fn get_neighbours(self) -> ShapeNeighbours {
         NEIGHBOUR_CACHE.get_or_init(|| {
             // technically we're allocating more than we need, since we'll always work with
             // normalized shapes. the overhead of making this array holey or using a PHF is not
@@ -147,13 +147,13 @@ impl Shape {
     }
 
     /// Checks if a shape is aligned to the top left corner.
-    fn is_normalized(&self) -> bool {
+    const fn is_normalized(self) -> bool {
         let touches_left = self.0 & 0b001_001_001 != 0;
         let touches_top = self.0 & 0b000_000_111 != 0;
         self.0 == 0 || (touches_left && touches_top)
     }
 
-    fn calculate_neighbours(&self) -> ShapeNeighbours {
+    fn calculate_neighbours(self) -> ShapeNeighbours {
         let width = Self::WIDTH as isize;
         let height = Self::HEIGHT as isize;
 
@@ -187,7 +187,7 @@ impl Shape {
         neighbours
     }
 
-    pub fn get_max_x(&self) -> usize {
+    pub fn get_max_x(self) -> usize {
         debug_assert_ne!(self.0, 0);
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);
@@ -201,7 +201,7 @@ impl Shape {
         }
     }
 
-    pub fn get_max_y(&self) -> usize {
+    pub fn get_max_y(self) -> usize {
         debug_assert_ne!(self.0, 0);
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);

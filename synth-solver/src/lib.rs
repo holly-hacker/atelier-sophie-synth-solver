@@ -1,3 +1,5 @@
+#![warn(clippy::trivially_copy_pass_by_ref, clippy::use_self)]
+
 pub use tinyvec;
 
 pub mod errors;

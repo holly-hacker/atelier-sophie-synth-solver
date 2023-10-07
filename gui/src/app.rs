@@ -80,7 +80,7 @@ impl eframe::App for App {
                             match res {
                                 Ok(scores) => scores,
                                 Err(e) => {
-                                    ui.label(format!("Error: {:?}", e));
+                                    ui.label(format!("Error: {e:?}"));
                                     return;
                                 }
                             };

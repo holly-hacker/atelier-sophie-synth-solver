@@ -158,7 +158,7 @@ fn goals_input(ui: &mut egui::Ui, goals: &mut Vec<Goal>) {
 
 fn color_combobox(ui: &mut egui::Ui, color: &mut synth_solver::Color) {
     egui::ComboBox::from_id_source("color combobox")
-        .selected_text(format!("{:?}", color))
+        .selected_text(format!("{color:?}"))
         .show_ui(ui, |ui| {
             ui.selectable_value(color, synth_solver::Color::Red, "Red");
             ui.selectable_value(color, synth_solver::Color::Green, "Green");

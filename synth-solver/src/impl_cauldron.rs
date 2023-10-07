@@ -108,7 +108,7 @@ impl Cauldron {
         // increment the neighbours of this shape
         let neighbours = shape.get_neighbours();
 
-        for (neighbour_x, neighbour_y) in neighbours.into_iter() {
+        for (neighbour_x, neighbour_y) in neighbours {
             let position_x = placement_x as isize + neighbour_x;
             let position_y = placement_y as isize + neighbour_y;
 
@@ -144,6 +144,6 @@ impl Cauldron {
             .iter()
             .filter_map(|t| t.as_ref())
             .filter_map(|t| t.played_color)
-            .fold(CoverageInfo::default(), |acc, color| acc.add_color(color))
+            .fold(CoverageInfo::default(), CoverageInfo::add_color)
     }
 }

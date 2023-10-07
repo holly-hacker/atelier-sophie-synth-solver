@@ -24,7 +24,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                     .place(&materials, item, placement, false, &mut scores)
                     .unwrap();
             }
-        })
+        });
     });
 
     c.bench_function("optimal routes for uni bag on basic 5x5 cauldron", |b| {
@@ -43,7 +43,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                 black_box(&goals),
                 black_box(&properties),
             ));
-        })
+        });
     });
 
     c.bench_function("find optimal routes with perfect solution", |b| {
@@ -67,7 +67,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                 black_box(&goals),
                 black_box(&properties),
             ));
-        })
+        });
     });
 }
 

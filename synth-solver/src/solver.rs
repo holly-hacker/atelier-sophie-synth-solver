@@ -34,7 +34,7 @@ impl GoalResult {
         }
     }
 
-    pub fn is_strictly_better(&self, other: &GoalResult) -> bool {
+    pub fn is_strictly_better(&self, other: &Self) -> bool {
         debug_assert_eq!(self.scores.len(), other.scores.len());
         self.scores
             .iter()
@@ -99,7 +99,7 @@ fn find_optimal_recursive(
                     .iter()
                     .all(|ms| !ms.0.is_strictly_better(&current_results)))
         {
-            max_scores.push((current_results.clone(), path.clone()));
+            max_scores.push((current_results.clone(), path));
 
             // check if we reached a perfect score, which is where we meet all goals
             if current_results
@@ -128,7 +128,7 @@ fn find_optimal_recursive(
             // TODO: also iterate over possible transformations of the tile
             // TODO: make sure to dedupe too
             for transformation in generate_transformations(
-                &materials[material_group_index][material_index].shape,
+                materials[material_group_index][material_index].shape,
                 properties.transformations,
             ) {
                 for playfield_index in 0..playfield.tiles.len() {
@@ -174,7 +174,7 @@ fn find_optimal_recursive(
 
 // at most, this should return 4 permutations (for rotation)
 fn generate_transformations(
-    shape: &Shape,
+    shape: Shape,
     transformation_type: TransformationType,
 ) -> ArrayVec<[Option<Transformation>; 4]> {
     let mut ret = ArrayVec::new();
@@ -185,17 +185,17 @@ fn generate_transformations(
     match transformation_type {
         TransformationType::None => {}
         TransformationType::FlipHorizontal => {
-            if shape.apply_transformation(Transformation::FlipHorizontal) != *shape {
+            if shape.apply_transformation(Transformation::FlipHorizontal) != shape {
                 ret.push(Some(Transformation::FlipHorizontal));
             }
         }
         TransformationType::FlipVertical => {
-            if shape.apply_transformation(Transformation::FlipVertical) != *shape {
+            if shape.apply_transformation(Transformation::FlipVertical) != shape {
                 ret.push(Some(Transformation::FlipVertical));
             }
         }
         TransformationType::Rotate => {
-            if shape.apply_transformation(Transformation::Rotate90) != *shape {
+            if shape.apply_transformation(Transformation::Rotate90) != shape {
                 ret.push(Some(Transformation::Rotate90));
 
                 if shape.apply_transformation(Transformation::Rotate90)
@@ -204,7 +204,7 @@ fn generate_transformations(
                     ret.push(Some(Transformation::Rotate270));
                 }
             }
-            if shape.apply_transformation(Transformation::Rotate180) != *shape {
+            if shape.apply_transformation(Transformation::Rotate180) != shape {
                 ret.push(Some(Transformation::Rotate180));
             }
         }

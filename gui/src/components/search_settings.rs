@@ -23,7 +23,7 @@ fn transformations_combobox(
     transformation: &mut synth_solver::TransformationType,
 ) {
     egui::ComboBox::from_label("Transformation")
-        .selected_text(format!("{:?}", transformation))
+        .selected_text(format!("{transformation:?}"))
         .show_ui(ui, |ui| {
             ui.selectable_value(
                 transformation,
