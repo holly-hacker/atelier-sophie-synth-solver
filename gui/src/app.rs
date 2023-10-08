@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 use egui::RichText;
 
 use synth_solver::{
@@ -8,12 +10,17 @@ use synth_solver::{
 use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
 use crate::util::synth_color_to_egui_color;
 
+struct PendingSearch {
+    results_receiver: oneshot::Receiver<SolverResult>,
+    current_progress: Arc<RwLock<f32>>,
+}
+
 pub struct App {
     cauldron: CauldronComponent,
     input: InputComponent,
     settings: SolverSettingsComponent,
     results: Option<SolverResult>,
-    results_receiver: Option<oneshot::Receiver<SolverResult>>,
+    pending_search: Option<PendingSearch>,
 }
 
 impl App {
@@ -24,21 +31,21 @@ impl App {
             input: Default::default(),
             settings: Default::default(),
             results: None,
-            results_receiver: None,
+            pending_search: None,
         }
     }
 }
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if let Some(results_receiver) = &self.results_receiver {
-            if let Ok(results) = results_receiver.try_recv() {
+        if let Some(pending_search) = &self.pending_search {
+            if let Ok(results) = pending_search.results_receiver.try_recv() {
                 self.results = Some(results);
-                self.results_receiver = None;
+                self.pending_search = None;
             };
         }
 
-        let results_pending = self.results_receiver.is_some();
+        let results_pending = self.pending_search.is_some();
         let results_available = self.results.is_some();
         let can_edit_input = !results_pending && !results_available;
         if results_available {
@@ -58,35 +65,61 @@ impl eframe::App for App {
                 ui.label(err);
             } else {
                 ui.add_enabled_ui(can_edit_input, |ui| {
-                    ui.horizontal(|ui| {
-                        if ui.button("Run solver").clicked() {
-                            let cloned_ctx = ctx.clone();
-                            let cauldron = self.cauldron.clone();
-                            let materials = self.input.materials.clone();
-                            let goals = self.input.goals.clone();
-                            let settings = self.settings.props.clone();
-                            let (send, recv) = oneshot::channel();
-                            self.results_receiver = Some(recv);
+                    if ui.button("Run solver").clicked() {
+                        let cloned_ctx = ctx.clone();
+                        let cauldron = self.cauldron.clone();
+                        let materials = self.input.materials.clone();
+                        let goals = self.input.goals.clone();
+                        let settings = self.settings.props.clone();
 
-                            std::thread::spawn(move || {
-                                let found_routes = synth_solver::solver::find_optimal_routes(
-                                    &cauldron, &materials, &goals, &settings,
-                                );
-                                println!("Found {} routes", found_routes.len());
-                                send.send(found_routes).unwrap();
-                                cloned_ctx.request_repaint();
-                            });
-                        }
-                        if results_pending {
-                            ui.spinner();
-                        }
-                    });
+                        let (send, recv) = oneshot::channel();
+                        let progress_val = Arc::new(RwLock::new(0.));
+
+                        self.pending_search = Some(PendingSearch {
+                            results_receiver: recv,
+                            current_progress: progress_val.clone(),
+                        });
+
+                        std::thread::spawn(move || {
+                            let found_routes = synth_solver::solver::find_optimal_routes(
+                                &cauldron,
+                                &materials,
+                                &goals,
+                                &settings,
+                                Some(Box::new(move |progress| {
+                                    *progress_val.write().unwrap() = progress;
+
+                                    // for now, don't stop the search
+                                    std::ops::ControlFlow::Continue(())
+                                })),
+                            );
+                            println!("Found {} routes", found_routes.len());
+                            send.send(found_routes).unwrap();
+                            cloned_ctx.request_repaint();
+                        });
+                    }
                 });
+
                 ui.add_enabled_ui(results_available, |ui| {
                     if ui.button("Clear results").clicked() {
                         self.results = None;
                     }
                 });
+
+                if let Some(pending_search) = &self.pending_search {
+                    let progress = *pending_search.current_progress.read().unwrap();
+                    ui.add(
+                        egui::widgets::ProgressBar::new(progress)
+                            .animate(true)
+                            .show_percentage(),
+                    );
+                    if progress > 1.1 {
+                        ui.label(format!(
+                            "Warning: progress is greater than 100%: {progress}"
+                        ));
+                    }
+                    ui.ctx().request_repaint();
+                }
             }
         });
 

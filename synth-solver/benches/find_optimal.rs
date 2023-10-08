@@ -42,6 +42,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                 black_box(&materials),
                 black_box(&goals),
                 black_box(&properties),
+                None,
             ));
         });
     });
@@ -66,6 +67,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                 black_box(&materials),
                 black_box(&goals),
                 black_box(&properties),
+                None,
             ));
         });
     });

@@ -10,7 +10,8 @@ pub fn test_basic_uni_bag() {
         vec![material::broken_stone()],
     ];
     let properties = solver::SolverSettings::default();
-    let optimal_routes = solver::find_optimal_routes(&cauldron, &materials, &goals, &properties);
+    let optimal_routes =
+        solver::find_optimal_routes(&cauldron, &materials, &goals, &properties, None);
 
     assert_eq!(optimal_routes.len(), 2);
     assert_eq!(
@@ -44,7 +45,8 @@ pub fn test_basic_uni_bag_with_rotations() {
         transformations: TransformationType::Rotate,
         allow_overlaps: false,
     };
-    let optimal_routes = solver::find_optimal_routes(&cauldron, &materials, &goals, &properties);
+    let optimal_routes =
+        solver::find_optimal_routes(&cauldron, &materials, &goals, &properties, None);
 
     assert_eq!(optimal_routes.len(), 3);
     assert_eq!(

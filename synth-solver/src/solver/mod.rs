@@ -1,9 +1,14 @@
 mod goal_result;
+mod progress_tracker;
+
+use std::ops::ControlFlow;
 
 use tinyvec::ArrayVec;
 
 use crate::*;
 pub use goal_result::*;
+pub use progress_tracker::ProgressReporter;
+use progress_tracker::ProgressTracker;
 
 pub type SolverResult = Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>;
 
@@ -26,6 +31,7 @@ pub fn find_optimal_routes(
     materials: &[Vec<Material>],
     goals: &[Goal],
     properties: &SolverSettings,
+    progress_reporter: Option<ProgressReporter>,
 ) -> SolverResult {
     assert_eq!(materials.len(), goals.len());
 
@@ -37,12 +43,16 @@ pub fn find_optimal_routes(
         score_sets.push(Default::default());
     }
 
+    let mut progress_tracker = ProgressTracker::new(progress_reporter);
+
     let mut max_scores = Default::default();
+
     find_optimal_recursive(
         playfield,
         materials,
         goals,
         properties,
+        &mut progress_tracker,
         path,
         score_sets,
         &mut max_scores,
@@ -51,16 +61,22 @@ pub fn find_optimal_routes(
     max_scores
 }
 
+#[allow(clippy::too_many_arguments)] // FIXME
 fn find_optimal_recursive(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
     properties: &SolverSettings,
+    progress_tracker: &mut ProgressTracker,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut SolverResult,
-) -> bool {
-    if path.len() == materials.iter().map(|m| m.len()).sum::<usize>() {
+) -> ControlFlow<()> {
+    let current_depth = path.len();
+    let material_count = materials.iter().map(|m| m.len()).sum::<usize>();
+    let desired_depth = material_count;
+
+    if current_depth == desired_depth {
         let coverage = playfield.calculate_coverage();
         let scores = score_sets
             .iter()
@@ -86,30 +102,40 @@ fn find_optimal_recursive(
                 .zip(goals.iter().map(|g| g.effect_value_thresholds.len()))
                 .all(|(s, g)| *s == g)
             {
-                return true;
+                return ControlFlow::Break(());
             }
         }
 
-        return false;
+        return ControlFlow::Continue(());
     }
 
+    let material_count_in_current_iteration = material_count - current_depth;
+    progress_tracker.start_loop(material_count_in_current_iteration);
     for (material_group_index, material_group) in materials.iter().enumerate() {
-        for (material_index, _) in material_group.iter().enumerate() {
-            // we can't re-use materials
-            if path
+        for (material_index, _) in
+            material_group
                 .iter()
-                .any(|m| m.material_index == (material_group_index, material_index))
-            {
-                continue;
-            }
+                .enumerate()
+                .filter(|(material_index, _)| {
+                    !path
+                        .iter()
+                        .any(|m| m.material_index == (material_group_index, *material_index))
+                })
+        {
+            progress_tracker.report_progress()?;
 
-            // TODO: also iterate over possible transformations of the tile
-            // TODO: make sure to dedupe too
-            for transformation in generate_transformations(
+            let transformations = generate_transformations(
                 materials[material_group_index][material_index].shape,
                 properties.transformations,
-            ) {
+            );
+            progress_tracker.start_loop(transformations.len());
+            for transformation in transformations {
+                progress_tracker.report_progress()?;
+
+                progress_tracker.start_loop(playfield.tiles.len());
                 for playfield_index in 0..playfield.tiles.len() {
+                    progress_tracker.report_progress()?;
+
                     let placement = Placement::new(playfield_index, transformation);
                     let mut new_path = path.clone();
                     new_path.push(Move {
@@ -128,26 +154,29 @@ fn find_optimal_recursive(
                         )
                         .is_ok()
                     {
-                        let early_exit = find_optimal_recursive(
+                        find_optimal_recursive(
                             &new_playfield,
                             materials,
                             goals,
                             properties,
+                            progress_tracker,
                             new_path,
                             new_score_sets,
                             max_scores,
-                        );
-
-                        if early_exit {
-                            return true;
-                        }
+                        )?;
                     }
+                    progress_tracker.bump_loop_progress(); // playfield tiles
                 }
+                progress_tracker.end_loop(); // playfield tiles
+                progress_tracker.bump_loop_progress(); // transformations
             }
+            progress_tracker.end_loop(); // transformations
+            progress_tracker.bump_loop_progress(); // materials
         }
     }
+    progress_tracker.end_loop(); // materials
 
-    false
+    ControlFlow::Continue(())
 }
 
 // at most, this should return 4 permutations (for rotation)

@@ -153,6 +153,7 @@ fn goals_input(ui: &mut egui::Ui, goals: &mut Vec<Goal>) {
         goals.push(default_goal());
     }
 
+    debug_assert!(to_remove.len() <= 1);
     for goal_idx in to_remove {
         goals.remove(goal_idx);
     }
