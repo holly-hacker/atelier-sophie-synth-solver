@@ -1,4 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{
+    atomic::{AtomicBool, AtomicU32},
+    Arc,
+};
 
 use egui::RichText;
 
@@ -10,9 +13,27 @@ use synth_solver::{
 use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
 use crate::util::synth_color_to_egui_color;
 
+struct AtomicF32(AtomicU32);
+
+impl AtomicF32 {
+    fn new(val: f32) -> Self {
+        Self(AtomicU32::new(val.to_bits()))
+    }
+
+    fn get(&self) -> f32 {
+        f32::from_bits(self.0.load(std::sync::atomic::Ordering::Relaxed))
+    }
+
+    fn set(&self, val: f32) {
+        self.0
+            .store(val.to_bits(), std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
 struct PendingSearch {
     results_receiver: oneshot::Receiver<SolverResult>,
-    current_progress: Arc<RwLock<f32>>,
+    cancelled: Arc<AtomicBool>,
+    current_progress: Arc<AtomicF32>,
 }
 
 pub struct App {
@@ -72,11 +93,13 @@ impl eframe::App for App {
                         let goals = self.input.goals.clone();
                         let settings = self.settings.props.clone();
 
-                        let (send, recv) = oneshot::channel();
-                        let progress_val = Arc::new(RwLock::new(0.));
+                        let (results_send, results_recv) = oneshot::channel();
+                        let cancelled = Arc::new(AtomicBool::new(false));
+                        let progress_val = Arc::new(AtomicF32::new(0.));
 
                         self.pending_search = Some(PendingSearch {
-                            results_receiver: recv,
+                            results_receiver: results_recv,
+                            cancelled: cancelled.clone(),
                             current_progress: progress_val.clone(),
                         });
 
@@ -87,14 +110,18 @@ impl eframe::App for App {
                                 &goals,
                                 &settings,
                                 Some(Box::new(move |progress| {
-                                    *progress_val.write().unwrap() = progress;
+                                    progress_val.set(progress);
+
+                                    if cancelled.load(std::sync::atomic::Ordering::Relaxed) {
+                                        return std::ops::ControlFlow::Break(());
+                                    }
 
                                     // for now, don't stop the search
                                     std::ops::ControlFlow::Continue(())
                                 })),
                             );
                             println!("Found {} routes", found_routes.len());
-                            send.send(found_routes).unwrap();
+                            results_send.send(found_routes).unwrap();
                             cloned_ctx.request_repaint();
                         });
                     }
@@ -107,7 +134,13 @@ impl eframe::App for App {
                 });
 
                 if let Some(pending_search) = &self.pending_search {
-                    let progress = *pending_search.current_progress.read().unwrap();
+                    if ui.button("Cancel").clicked() {
+                        pending_search
+                            .cancelled
+                            .store(true, std::sync::atomic::Ordering::Relaxed);
+                    }
+
+                    let progress = pending_search.current_progress.get();
                     ui.add(
                         egui::widgets::ProgressBar::new(progress)
                             .animate(true)
