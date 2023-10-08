@@ -57,11 +57,7 @@ fn test_calculation() {
     assert_eq!(coverage.get_color_ratio(Color::Yellow, &cauldron), 0.36);
     assert_eq!(coverage.get_color_ratio(Color::White, &cauldron), 0.12);
 
-    let final_scores = scores
-        .iter()
-        .zip(materials.iter())
-        .map(|(score_set, item_group)| score_set.calculate_score(item_group, &coverage, &cauldron))
-        .collect::<Vec<_>>();
+    let final_scores = cauldron.calculate_final_score(&materials, &scores);
 
-    assert_eq!(final_scores, vec![48, 39, 28]);
+    assert_eq!(final_scores.as_slice(), vec![48, 39, 28]);
 }

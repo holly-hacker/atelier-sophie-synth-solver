@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use tinyvec::ArrayVec;
 
 use crate::solver::Move;
 use crate::{errors::SynthError, *};
@@ -25,6 +26,22 @@ impl Cauldron {
         let index = y * self.size + x;
 
         self.tiles.get_mut(index).unwrap()
+    }
+
+    pub fn calculate_final_score(
+        &self,
+        material_groups: &[Vec<Material>],
+        score_sets: &[ColorScoreSet],
+    ) -> ArrayVec<[u32; MAX_GOALS]> {
+        let coverage = self.calculate_coverage();
+
+        let scores = score_sets
+            .iter()
+            .enumerate()
+            .map(|(i, s)| s.calculate_score(&material_groups[i], &coverage, self))
+            .collect::<ArrayVec<[_; MAX_GOALS]>>();
+
+        scores
     }
 
     pub fn place_all(

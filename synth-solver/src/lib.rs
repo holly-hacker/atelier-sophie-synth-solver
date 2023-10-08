@@ -121,7 +121,8 @@ pub struct CoverageInfo {
     coverage: [u32; 5],
 }
 
-/// The effect value score for each color of an item group/a single goal.
+/// The effect value score for each color of an item group/a single goal, before item bonus and
+/// coverage is applied.
 #[derive(Default, Clone, Copy, Debug)]
 pub struct ColorScoreSet {
     scores: [u32; 5],

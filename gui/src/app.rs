@@ -169,16 +169,11 @@ impl eframe::App for App {
                         route,
                         self.settings.props.allow_overlaps,
                     );
-                    let coverage = playfield.calculate_coverage();
 
                     let scores = match res {
-                        Ok(scores) => scores
-                            .iter()
-                            .enumerate()
-                            .map(|(i, s)| {
-                                s.calculate_score(&self.input.materials[i], &coverage, &playfield)
-                            })
-                            .collect::<Vec<_>>(),
+                        Ok(scores) => {
+                            playfield.calculate_final_score(&self.input.materials, &scores)
+                        }
                         Err(e) => {
                             ui.label(format!("Error: {e:?}"));
                             continue;

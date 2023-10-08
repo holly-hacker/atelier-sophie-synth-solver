@@ -158,12 +158,7 @@ fn check_end_of_path(
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut SolverResult,
 ) -> ControlFlow<()> {
-    let coverage = playfield.calculate_coverage();
-    let scores = score_sets
-        .iter()
-        .enumerate()
-        .map(|(i, s)| s.calculate_score(&materials[i], &coverage, playfield))
-        .collect::<ArrayVec<[_; MAX_GOALS]>>();
+    let scores = playfield.calculate_final_score(materials, &score_sets);
     let current_results = GoalResult::from_scores(&scores, goals);
 
     max_scores.retain(|r| !current_results.is_strictly_better(&r.0) || r.0 == current_results);
