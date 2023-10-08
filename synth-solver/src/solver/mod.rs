@@ -77,36 +77,15 @@ fn find_optimal_recursive(
     let desired_depth = material_count;
 
     if current_depth == desired_depth {
-        let coverage = playfield.calculate_coverage();
-        let scores = score_sets
-            .iter()
-            .enumerate()
-            .map(|(i, s)| s.calculate_score(&materials[i], &coverage, playfield))
-            .collect::<ArrayVec<[_; MAX_GOALS]>>();
-        let current_results = GoalResult::from_scores(&scores, goals);
-
-        max_scores.retain(|r| !current_results.is_strictly_better(&r.0));
-
-        if max_scores.is_empty()
-            || (!max_scores.iter().any(|ms| ms.0 == current_results)
-                && max_scores
-                    .iter()
-                    .all(|ms| !ms.0.is_strictly_better(&current_results)))
-        {
-            max_scores.push((current_results.clone(), path));
-
-            // check if we reached a perfect score, which is where we meet all goals
-            if current_results
-                .scores
-                .iter()
-                .zip(goals.iter().map(|g| g.effect_value_thresholds.len()))
-                .all(|(s, g)| *s == g)
-            {
-                return ControlFlow::Break(());
-            }
-        }
-
-        return ControlFlow::Continue(());
+        return check_end_of_path(
+            playfield,
+            materials,
+            goals,
+            progress_tracker,
+            path,
+            score_sets,
+            max_scores,
+        );
     }
 
     let material_count_in_current_iteration = material_count - current_depth;
@@ -175,6 +154,47 @@ fn find_optimal_recursive(
         }
     }
     progress_tracker.end_loop(); // materials
+
+    ControlFlow::Continue(())
+}
+
+fn check_end_of_path(
+    playfield: &Cauldron,
+    materials: &[Vec<Material>],
+    goals: &[Goal],
+    _progress_tracker: &mut ProgressTracker,
+    path: ArrayVec<[Move; MAX_ITEMS]>,
+    score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
+    max_scores: &mut SolverResult,
+) -> ControlFlow<()> {
+    let coverage = playfield.calculate_coverage();
+    let scores = score_sets
+        .iter()
+        .enumerate()
+        .map(|(i, s)| s.calculate_score(&materials[i], &coverage, playfield))
+        .collect::<ArrayVec<[_; MAX_GOALS]>>();
+    let current_results = GoalResult::from_scores(&scores, goals);
+
+    max_scores.retain(|r| !current_results.is_strictly_better(&r.0));
+
+    if max_scores.is_empty()
+        || (!max_scores.iter().any(|ms| ms.0 == current_results)
+            && max_scores
+                .iter()
+                .all(|ms| !ms.0.is_strictly_better(&current_results)))
+    {
+        max_scores.push((current_results.clone(), path));
+
+        // check if we reached a perfect score, which is where we meet all goals
+        if current_results
+            .scores
+            .iter()
+            .zip(goals.iter().map(|g| g.effect_value_thresholds.len()))
+            .all(|(s, g)| *s == g)
+        {
+            return ControlFlow::Break(());
+        }
+    }
 
     ControlFlow::Continue(())
 }
