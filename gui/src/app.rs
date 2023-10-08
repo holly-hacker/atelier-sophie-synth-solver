@@ -1,6 +1,6 @@
 use std::sync::{
     atomic::{AtomicBool, AtomicU32},
-    Arc,
+    Arc, RwLock,
 };
 
 use egui::RichText;
@@ -40,7 +40,7 @@ pub struct App {
     cauldron: CauldronComponent,
     input: InputComponent,
     settings: SolverSettingsComponent,
-    results: Option<SolverResult>,
+    results: Arc<RwLock<Option<SolverResult>>>,
     pending_search: Option<PendingSearch>,
 }
 
@@ -51,7 +51,7 @@ impl App {
             cauldron: CauldronComponent::default(),
             input: Default::default(),
             settings: Default::default(),
-            results: None,
+            results: Arc::new(RwLock::new(None)),
             pending_search: None,
         }
     }
@@ -61,13 +61,13 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if let Some(pending_search) = &self.pending_search {
             if let Ok(results) = pending_search.results_receiver.try_recv() {
-                self.results = Some(results);
+                *self.results.write().unwrap() = Some(results);
                 self.pending_search = None;
             };
         }
 
         let results_pending = self.pending_search.is_some();
-        let results_available = self.results.is_some();
+        let results_available = self.results.read().unwrap().is_some();
         let can_edit_input = !results_pending && !results_available;
         if results_available {
             debug_assert!(!results_pending);
@@ -96,6 +96,7 @@ impl eframe::App for App {
                         let (results_send, results_recv) = oneshot::channel();
                         let cancelled = Arc::new(AtomicBool::new(false));
                         let progress_val = Arc::new(AtomicF32::new(0.));
+                        let results = self.results.clone();
 
                         self.pending_search = Some(PendingSearch {
                             results_receiver: results_recv,
@@ -109,8 +110,9 @@ impl eframe::App for App {
                                 &materials,
                                 &goals,
                                 &settings,
-                                Some(Box::new(move |progress| {
+                                Some(Box::new(move |progress, temp_results| {
                                     progress_val.set(progress);
+                                    *results.write().unwrap() = Some(temp_results);
 
                                     if cancelled.load(std::sync::atomic::Ordering::Relaxed) {
                                         return std::ops::ControlFlow::Break(());
@@ -129,7 +131,7 @@ impl eframe::App for App {
 
                 ui.add_enabled_ui(results_available, |ui| {
                     if ui.button("Clear results").clicked() {
-                        self.results = None;
+                        *self.results.write().unwrap() = None;
                     }
                 });
 
@@ -158,7 +160,7 @@ impl eframe::App for App {
 
         egui::SidePanel::right("right panel").show(ctx, |ui| {
             ui.heading("Results");
-            if let Some(routes) = &self.results {
+            if let Some(routes) = self.results.read().unwrap().as_ref() {
                 for (goal_result, route) in routes {
                     // calculate the playfield after these moves
                     let mut playfield = self.cauldron.clone();

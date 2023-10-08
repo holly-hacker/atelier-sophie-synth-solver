@@ -31,7 +31,7 @@ pub fn find_optimal_routes(
     materials: &[Vec<Material>],
     goals: &[Goal],
     properties: &SolverSettings,
-    progress_reporter: Option<ProgressReporter>,
+    progress_reporter: Option<ProgressReporter<SolverResult>>,
 ) -> SolverResult {
     assert_eq!(materials.len(), goals.len());
 
@@ -67,7 +67,7 @@ fn find_optimal_recursive(
     materials: &[Vec<Material>],
     goals: &[Goal],
     properties: &SolverSettings,
-    progress_tracker: &mut ProgressTracker,
+    progress_tracker: &mut ProgressTracker<SolverResult>,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut SolverResult,
@@ -77,15 +77,7 @@ fn find_optimal_recursive(
     let desired_depth = material_count;
 
     if current_depth == desired_depth {
-        return check_end_of_path(
-            playfield,
-            materials,
-            goals,
-            progress_tracker,
-            path,
-            score_sets,
-            max_scores,
-        );
+        return check_end_of_path(playfield, materials, goals, path, score_sets, max_scores);
     }
 
     let material_count_in_current_iteration = material_count - current_depth;
@@ -101,7 +93,7 @@ fn find_optimal_recursive(
                         .any(|m| m.material_index == (material_group_index, *material_index))
                 })
         {
-            progress_tracker.report_progress()?;
+            progress_tracker.report_progress(max_scores)?;
 
             let transformations = generate_transformations(
                 materials[material_group_index][material_index].shape,
@@ -109,11 +101,11 @@ fn find_optimal_recursive(
             );
             progress_tracker.start_loop(transformations.len());
             for transformation in transformations {
-                progress_tracker.report_progress()?;
+                progress_tracker.report_progress(max_scores)?;
 
                 progress_tracker.start_loop(playfield.tiles.len());
                 for playfield_index in 0..playfield.tiles.len() {
-                    progress_tracker.report_progress()?;
+                    progress_tracker.report_progress(max_scores)?;
 
                     let placement = Placement::new(playfield_index, transformation);
                     let mut new_path = path.clone();
@@ -162,7 +154,6 @@ fn check_end_of_path(
     playfield: &Cauldron,
     materials: &[Vec<Material>],
     goals: &[Goal],
-    _progress_tracker: &mut ProgressTracker,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
     max_scores: &mut SolverResult,
@@ -175,7 +166,7 @@ fn check_end_of_path(
         .collect::<ArrayVec<[_; MAX_GOALS]>>();
     let current_results = GoalResult::from_scores(&scores, goals);
 
-    max_scores.retain(|r| !current_results.is_strictly_better(&r.0));
+    max_scores.retain(|r| !current_results.is_strictly_better(&r.0) || r.0 == current_results);
 
     if max_scores.is_empty()
         || (!max_scores.iter().any(|ms| ms.0 == current_results)

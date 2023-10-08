@@ -1,21 +1,21 @@
 use std::ops::ControlFlow;
 
-pub type ProgressReporter = Box<dyn Fn(f32) -> ControlFlow<()>>;
+pub type ProgressReporter<TResult> = Box<dyn Fn(f32, TResult) -> ControlFlow<()>>;
 
-pub struct ProgressTracker {
+pub struct ProgressTracker<TResult: Clone> {
     /// The progress reporter that should be called when the progress changes.
-    progress_reporter: Option<ProgressReporter>,
+    progress_reporter: Option<ProgressReporter<TResult>>,
     /// count and total for each progress level
     progress_stack: Vec<(usize, usize)>,
 
     max_depth_encountered: usize,
 }
 
-impl ProgressTracker {
+impl<TResult: Clone> ProgressTracker<TResult> {
     /// The amount of depth levels we don't report progress in, to optimize performance.
     const REPORT_DEPTH: usize = 3;
 
-    pub fn new(progress_reporter: Option<ProgressReporter>) -> Self {
+    pub fn new(progress_reporter: Option<ProgressReporter<TResult>>) -> Self {
         Self {
             progress_reporter,
             progress_stack: vec![],
@@ -42,7 +42,7 @@ impl ProgressTracker {
         }
     }
 
-    pub fn report_progress(&mut self) -> ControlFlow<()> {
+    pub fn report_progress(&mut self, result: &TResult) -> ControlFlow<()> {
         if self.progress_stack.len()
             > (self
                 .max_depth_encountered
@@ -55,7 +55,7 @@ impl ProgressTracker {
             return ControlFlow::Continue(());
         };
 
-        progress_reporter(self.get_current_progress())
+        progress_reporter(self.get_current_progress(), result.clone())
     }
 
     fn get_current_progress(&self) -> f32 {
@@ -79,23 +79,23 @@ mod tests {
 
     #[test]
     fn test_progress_counts_up_to_1() {
-        let mut tracker = ProgressTracker::new(None);
+        let mut tracker = ProgressTracker::<()>::new(None);
 
         tracker.start_loop(5);
         for _ in 0..5 {
-            tracker.report_progress();
+            tracker.report_progress(&());
             tracker.start_loop(4);
             for _ in 0..4 {
-                tracker.report_progress();
+                tracker.report_progress(&());
                 tracker.start_loop(3);
                 for _ in 0..3 {
-                    tracker.report_progress();
+                    tracker.report_progress(&());
                     tracker.start_loop(2);
                     for _ in 0..2 {
-                        tracker.report_progress();
+                        tracker.report_progress(&());
                         tracker.start_loop(1);
                         for _ in 0..1 {
-                            tracker.report_progress();
+                            tracker.report_progress(&());
                             tracker.start_loop(0);
                             tracker.end_loop();
 
