@@ -62,7 +62,7 @@ impl<TResult: Clone> ProgressTracker<TResult> {
         let (current_progress, _) =
             self.progress_stack
                 .iter()
-                .cloned()
+                .copied()
                 .fold((0., 1.), |(total, mult), (p_cur, p_max)| {
                     let current_progress = p_cur as f32 / p_max as f32;
                     let progress_delta = current_progress * mult;

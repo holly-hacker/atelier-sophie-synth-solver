@@ -26,7 +26,7 @@ impl AtomicF32 {
 
     fn set(&self, val: f32) {
         self.0
-            .store(val.to_bits(), std::sync::atomic::Ordering::Relaxed)
+            .store(val.to_bits(), std::sync::atomic::Ordering::Relaxed);
     }
 }
 
