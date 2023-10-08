@@ -13,4 +13,5 @@ eframe = { version = "0.23.0", default-features = false, features = [
     "x11",
 ] }
 egui = "0.23.0"
+oneshot = { version = "0.1.6", default-features = false, features = ["std"] }
 synth-solver = { path = "../synth-solver" }

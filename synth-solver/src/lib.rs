@@ -104,7 +104,7 @@ pub enum Transformation {
 }
 
 /// An item effect that can be reached by getting certain item effect levels.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Goal {
     /// Thresholds where the goal is considered met.
     pub effect_value_thresholds: Vec<u32>,

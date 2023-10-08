@@ -5,11 +5,13 @@ use tinyvec::ArrayVec;
 use crate::*;
 pub use goal_result::*;
 
-#[derive(Default)]
+pub type SolverResult = Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>;
+
+#[derive(Default, Clone)]
 pub struct SolverSettings {
     /// The allowed transformations
     pub transformations: TransformationType,
-    /// Whether
+    /// Whether to allow overlapping placements
     pub allow_overlaps: bool,
 }
 
@@ -24,7 +26,7 @@ pub fn find_optimal_routes(
     materials: &[Vec<Material>],
     goals: &[Goal],
     properties: &SolverSettings,
-) -> Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)> {
+) -> SolverResult {
     assert_eq!(materials.len(), goals.len());
 
     Shape::init_neighbour_cache();
@@ -56,7 +58,7 @@ fn find_optimal_recursive(
     properties: &SolverSettings,
     path: ArrayVec<[Move; MAX_ITEMS]>,
     score_sets: ArrayVec<[ColorScoreSet; MAX_GOALS]>,
-    max_scores: &mut Vec<(GoalResult, ArrayVec<[Move; MAX_ITEMS]>)>,
+    max_scores: &mut SolverResult,
 ) -> bool {
     if path.len() == materials.iter().map(|m| m.len()).sum::<usize>() {
         let coverage = playfield.calculate_coverage();
