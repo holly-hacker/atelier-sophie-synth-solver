@@ -5,14 +5,14 @@ use crate::*;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GoalResult {
     /// The amount of thresholds that are met for each goal.
-    pub scores: ArrayVec<[usize; MAX_GOALS]>,
+    pub achieved_goals: ArrayVec<[usize; MAX_GOALS]>,
 }
 
 impl GoalResult {
-    pub fn from_scores(scores: &[u32], goals: &[Goal]) -> Self {
-        debug_assert_eq!(scores.len(), goals.len());
+    pub fn from_scores(score: &[u32], goals: &[Goal]) -> Self {
+        debug_assert_eq!(score.len(), goals.len());
         Self {
-            scores: scores
+            achieved_goals: score
                 .iter()
                 .zip(goals.iter())
                 .map(|(s, g)| g.effect_value_thresholds.iter().filter(|t| s >= t).count())
@@ -21,10 +21,10 @@ impl GoalResult {
     }
 
     pub fn is_strictly_better(&self, other: &Self) -> bool {
-        debug_assert_eq!(self.scores.len(), other.scores.len());
-        self.scores
+        debug_assert_eq!(self.achieved_goals.len(), other.achieved_goals.len());
+        self.achieved_goals
             .iter()
-            .zip(other.scores.iter())
+            .zip(other.achieved_goals.iter())
             .all(|(a, b)| a >= b)
     }
 }
@@ -38,12 +38,12 @@ mod tests {
     macro_rules! is_strictly_better {
         (better: $(($a:expr, $b:expr),)*) => {
             $(
-                assert!(GoalResult { scores: $a }.is_strictly_better(&GoalResult { scores: $b }));
+                assert!(GoalResult { achieved_goals: $a }.is_strictly_better(&GoalResult { achieved_goals: $b }));
             )*
         };
         (not better: $(($a:expr, $b:expr),)*) => {
             $(
-                assert!(!GoalResult { scores: $a }.is_strictly_better(&GoalResult { scores: $b }));
+                assert!(!GoalResult { achieved_goals: $a }.is_strictly_better(&GoalResult { achieved_goals: $b }));
             )*
         };
     }

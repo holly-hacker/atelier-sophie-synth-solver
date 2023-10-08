@@ -160,32 +160,40 @@ impl eframe::App for App {
             ui.heading("Results");
             if let Some(routes) = &self.results {
                 for (goal_result, route) in routes {
-                    egui::CollapsingHeader::new(format!("Score: {:?}", goal_result.scores)).show(
-                        ui,
-                        |ui| {
-                            // render move list
-                            render_move_list(ui, &self.cauldron, route);
-
-                            // calculate the playfield after these moves
-                            let mut playfield = self.cauldron.clone();
-                            let res = playfield.place_all(
-                                &self.input.materials,
-                                route,
-                                self.settings.props.allow_overlaps,
-                            );
-
-                            match res {
-                                Ok(scores) => scores,
-                                Err(e) => {
-                                    ui.label(format!("Error: {e:?}"));
-                                    return;
-                                }
-                            };
-
-                            // render playfield
-                            render_playfield(ui, &playfield);
-                        },
+                    // calculate the playfield after these moves
+                    let mut playfield = self.cauldron.clone();
+                    let res = playfield.place_all(
+                        &self.input.materials,
+                        route,
+                        self.settings.props.allow_overlaps,
                     );
+                    let coverage = playfield.calculate_coverage();
+
+                    let scores = match res {
+                        Ok(scores) => scores
+                            .iter()
+                            .enumerate()
+                            .map(|(i, s)| {
+                                s.calculate_score(&self.input.materials[i], &coverage, &playfield)
+                            })
+                            .collect::<Vec<_>>(),
+                        Err(e) => {
+                            ui.label(format!("Error: {e:?}"));
+                            continue;
+                        }
+                    };
+
+                    egui::CollapsingHeader::new(format!(
+                        "Goals: {:?}, score: {:?}",
+                        goal_result.achieved_goals, scores
+                    ))
+                    .show(ui, |ui| {
+                        // render move list
+                        render_move_list(ui, &self.cauldron, route);
+
+                        // render playfield
+                        render_playfield(ui, &playfield);
+                    });
                 }
             }
         });

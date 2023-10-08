@@ -18,7 +18,7 @@ pub fn test_basic_uni_bag() {
         optimal_routes
             .iter()
             .cloned()
-            .filter(|r| r.0.scores.as_ref() == [1, 1, 1])
+            .filter(|r| r.0.achieved_goals.as_ref() == [1, 1, 1])
             .count(),
         1
     );
@@ -26,7 +26,7 @@ pub fn test_basic_uni_bag() {
         optimal_routes
             .iter()
             .cloned()
-            .filter(|r| r.0.scores.as_ref() == [2, 0, 0])
+            .filter(|r| r.0.achieved_goals.as_ref() == [2, 0, 0])
             .count(),
         1
     );
@@ -53,7 +53,7 @@ pub fn test_basic_uni_bag_with_rotations() {
         optimal_routes
             .iter()
             .cloned()
-            .filter(|r| r.0.scores.as_ref() == [1, 1, 1])
+            .filter(|r| r.0.achieved_goals.as_ref() == [1, 1, 1])
             .count(),
         1
     );
@@ -61,7 +61,7 @@ pub fn test_basic_uni_bag_with_rotations() {
         optimal_routes
             .iter()
             .cloned()
-            .filter(|r| r.0.scores.as_ref() == [1, 2, 0])
+            .filter(|r| r.0.achieved_goals.as_ref() == [1, 2, 0])
             .count(),
         1
     );
@@ -69,7 +69,7 @@ pub fn test_basic_uni_bag_with_rotations() {
         optimal_routes
             .iter()
             .cloned()
-            .filter(|r| r.0.scores.as_ref() == [2, 0, 0])
+            .filter(|r| r.0.achieved_goals.as_ref() == [2, 0, 0])
             .count(),
         1
     );

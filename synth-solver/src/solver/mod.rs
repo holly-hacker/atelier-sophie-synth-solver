@@ -187,7 +187,7 @@ fn check_end_of_path(
 
         // check if we reached a perfect score, which is where we meet all goals
         if current_results
-            .scores
+            .achieved_goals
             .iter()
             .zip(goals.iter().map(|g| g.effect_value_thresholds.len()))
             .all(|(s, g)| *s == g)
