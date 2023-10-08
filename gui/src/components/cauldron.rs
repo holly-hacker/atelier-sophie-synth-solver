@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 use eframe::epaint::Rounding;
 use egui::{Button, Color32, FontSelection, RichText, Vec2};
 
-use synth_solver::{Cauldron, Color, Tile};
+use synth_solver::{tiles, Cauldron, Color, Tile};
 
 use crate::util::synth_color_to_egui_color;
 
@@ -14,7 +14,7 @@ pub struct CauldronComponent {
 impl Default for CauldronComponent {
     fn default() -> Self {
         Self {
-            cauldron: synth_solver::utils::test_data::cauldron::uni_bag_5x5_bonus1(),
+            cauldron: default_cauldron(),
         }
     }
 }
@@ -38,6 +38,10 @@ impl CauldronComponent {
         ui.heading("Cauldron");
 
         // TODO: buttons to change size of the cauldron
+
+        if ui.button("Clear cauldron").clicked() {
+            self.cauldron = default_cauldron();
+        }
 
         // render playfield itself
         ui.horizontal(|ui| {
@@ -144,4 +148,17 @@ fn cauldron_tile(ui: &mut egui::Ui, tile: &mut Option<Tile>) {
                 })
             });
         });
+}
+
+fn default_cauldron() -> Cauldron {
+    Cauldron {
+        size: 5,
+        tiles: tiles![
+            W 0, W 0, W 0, W 0, W 0,
+            W 0, W 0, W 0, W 0, W 0,
+            W 0, W 0, W 0, W 0, W 0,
+            W 0, W 0, W 0, W 0, W 0,
+            W 0, W 0, W 0, W 0, W 0,
+        ],
+    }
 }
