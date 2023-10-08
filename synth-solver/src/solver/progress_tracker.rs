@@ -7,21 +7,25 @@ pub struct ProgressTracker {
     progress_reporter: Option<ProgressReporter>,
     /// count and total for each progress level
     progress_stack: Vec<(usize, usize)>,
+
+    max_depth_encountered: usize,
 }
 
 impl ProgressTracker {
-    /// The maximum depth at which we report progress.
+    /// The amount of depth levels we don't report progress in, to optimize performance.
     const REPORT_DEPTH: usize = 3;
 
     pub fn new(progress_reporter: Option<ProgressReporter>) -> Self {
         Self {
             progress_reporter,
             progress_stack: vec![],
+            max_depth_encountered: 0,
         }
     }
 
     pub fn start_loop(&mut self, count: usize) {
         self.progress_stack.push((0, count));
+        self.max_depth_encountered = self.max_depth_encountered.max(self.progress_stack.len());
     }
 
     pub fn end_loop(&mut self) {
@@ -39,7 +43,7 @@ impl ProgressTracker {
     }
 
     pub fn report_progress(&mut self) -> ControlFlow<()> {
-        if self.progress_stack.len() > Self::REPORT_DEPTH {
+        if self.progress_stack.len() > (self.max_depth_encountered - Self::REPORT_DEPTH) {
             return ControlFlow::Continue(());
         }
 
