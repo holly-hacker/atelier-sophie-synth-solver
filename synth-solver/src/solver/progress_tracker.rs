@@ -43,7 +43,11 @@ impl ProgressTracker {
     }
 
     pub fn report_progress(&mut self) -> ControlFlow<()> {
-        if self.progress_stack.len() > (self.max_depth_encountered - Self::REPORT_DEPTH) {
+        if self.progress_stack.len()
+            > (self
+                .max_depth_encountered
+                .saturating_sub(Self::REPORT_DEPTH))
+        {
             return ControlFlow::Continue(());
         }
 
