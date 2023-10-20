@@ -47,6 +47,32 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         });
     });
 
+    c.bench_function(
+        "optimal routes for uni bag on basic 5x5 cauldron with overlaps",
+        |b| {
+            let materials = vec![
+                vec![material::uni(), material::uni()],
+                vec![material::beehive()],
+                vec![material::broken_stone()],
+            ];
+            let cauldron = cauldron::uni_bag_5x5_bonus1();
+            let goals = goals::uni_bag();
+            let properties = SolverSettings {
+                allow_overlaps: true,
+                ..Default::default()
+            };
+            b.iter(|| {
+                black_box(solver::find_optimal_routes(
+                    black_box(&cauldron),
+                    black_box(&materials),
+                    black_box(&goals),
+                    black_box(&properties),
+                    None,
+                ));
+            });
+        },
+    );
+
     c.bench_function("find optimal routes with perfect solution", |b| {
         let perfect_material = Material {
             color: Color::White,

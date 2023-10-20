@@ -97,14 +97,10 @@ impl Cauldron {
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .as_mut()
                     .expect("cannot place item on unavailable tile");
-                if tile.played_material_index.is_some() {
-                    if allow_overlap {
-                        todo!("implement tile overlap");
-                    } else {
-                        return Err(SynthError::DisallowedOverlap);
-                    }
+
+                if tile.played_material_index.is_some() && !allow_overlap {
+                    return Err(SynthError::DisallowedOverlap);
                 }
-                tile.played_material_index = Some(material_index);
 
                 // TODO: this currently assumes a "Grandma's Cauldron"
                 // this means that matching colors give 50% bonus (rounded down) and tiles give 3/5/7 points
@@ -120,6 +116,22 @@ impl Cauldron {
                     3 => 7. * bonus,
                     n => unreachable!("invalid tile level: {n}"),
                 };
+
+                let material_index_before_placement = tile.played_material_index;
+
+                tile.played_material_index = Some(material_index);
+                tile.level = 0;
+
+                if let Some(material_index) = material_index_before_placement {
+                    debug_assert!(allow_overlap); // checked earlier
+
+                    // clear all tiles that have the old material index
+                    for other_tile in self.tiles.iter_mut().filter_map(|t| t.as_mut()) {
+                        if other_tile.played_material_index == Some(material_index) {
+                            other_tile.played_material_index = None;
+                        }
+                    }
+                }
             }
         }
         // score is truncated into an integer

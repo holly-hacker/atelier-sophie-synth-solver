@@ -11,9 +11,7 @@ impl SolverSettingsComponent {
         ui.group(|ui| {
             transformations_combobox(ui, &mut self.props.transformations);
 
-            ui.add_enabled_ui(false, |ui| {
-                ui.checkbox(&mut self.props.allow_overlaps, "Allow overlaps");
-            });
+            ui.checkbox(&mut self.props.allow_overlaps, "Allow overlaps");
         });
     }
 }
