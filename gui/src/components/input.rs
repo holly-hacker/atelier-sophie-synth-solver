@@ -32,14 +32,16 @@ impl InputComponent {
 
         // each goal must have ascending thresholds
         for (goal_idx, goal) in self.goals.iter().enumerate() {
-            let mut last_threshold = 0;
+            let mut last_threshold = None;
             for threshold in goal.effect_value_thresholds.iter() {
-                if *threshold <= last_threshold {
-                    return Err(format!(
-                        "Goal thresholds for goal {goal_idx} must be ascending"
-                    ));
+                if let Some(last_threshold) = last_threshold.as_mut() {
+                    if *threshold <= *last_threshold {
+                        return Err(format!(
+                            "Goal thresholds for goal {goal_idx} must be ascending"
+                        ));
+                    }
                 }
-                last_threshold = *threshold;
+                last_threshold = Some(*threshold);
             }
         }
 
