@@ -13,8 +13,10 @@ impl Cauldron {
     pub fn get_tile(&self, index: (usize, usize)) -> Option<Tile> {
         debug_assert!(index.0 < self.size);
         debug_assert!(index.1 < self.size);
-        let (row, col) = index;
-        let index = row * self.size + col;
+
+        let (x, y) = index;
+        let index = y * self.size + x;
+
         *self.tiles.get(index).unwrap()
     }
 

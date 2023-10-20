@@ -44,11 +44,12 @@ impl CauldronComponent {
         }
 
         // render playfield itself
+        // rendering by row to prevent some layout issues
         ui.horizontal(|ui| {
-            for row in 0..self.size {
+            for x in 0..self.size {
                 ui.vertical(|ui| {
-                    for col in 0..self.size {
-                        let tile = self.get_tile_mut((row, col));
+                    for y in 0..self.size {
+                        let tile = self.get_tile_mut((x, y));
                         cauldron_tile(ui, tile);
                     }
                 });

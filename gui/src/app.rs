@@ -233,10 +233,10 @@ fn render_move_list(ui: &mut egui::Ui, cauldron: &Cauldron, route: &[Move]) {
 }
 
 fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron, materials: &[Vec<Material>]) {
-    for row in 0..playfield.size {
+    for y in 0..playfield.size {
         ui.horizontal(|ui| {
-            for col in 0..playfield.size {
-                let tile = playfield.get_tile((row, col));
+            for x in 0..playfield.size {
+                let tile = playfield.get_tile((x, y));
                 let Some(tile) = tile else {
                     ui.label(RichText::new(" ").monospace());
                     continue;
