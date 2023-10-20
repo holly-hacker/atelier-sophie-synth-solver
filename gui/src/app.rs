@@ -69,11 +69,23 @@ impl eframe::App for App {
         let results_pending = self.pending_search.is_some();
         let results_available = self.results.read().unwrap().is_some();
         let can_edit_input = !results_pending && !results_available;
-        if results_available {
-            debug_assert!(!results_pending);
-        }
+        debug_assert!(!results_available || !results_pending);
 
         egui::SidePanel::left("left panel").show(ctx, |ui| {
+            ui.label(format!("zoom: {}x", ctx.pixels_per_point()));
+            ui.horizontal(|ui| {
+                if ui.button("1.0x").clicked() {
+                    ctx.set_pixels_per_point(1.0);
+                }
+                if ui.button("1.5x").clicked() {
+                    ctx.set_pixels_per_point(1.5);
+                }
+                if ui.button("2.0x").clicked() {
+                    ctx.set_pixels_per_point(2.0);
+                }
+            });
+            ui.add_space(8.);
+
             ui.add_enabled_ui(can_edit_input, |ui| {
                 self.input.render(ui);
                 ui.add_space(16.);
