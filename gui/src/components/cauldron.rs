@@ -134,7 +134,7 @@ fn cauldron_tile(ui: &mut egui::Ui, tile: &mut Option<Tile>) {
                                                 *tile = Some(Tile {
                                                     color: *color,
                                                     level: 0,
-                                                    played_color: None,
+                                                    played_material_index: None,
                                                 });
                                             }
                                         } else {

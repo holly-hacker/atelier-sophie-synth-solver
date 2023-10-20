@@ -10,7 +10,7 @@ macro_rules! tiles {
         Some($crate::Tile {
             color: $crate::Color::$color,
             level: $level,
-            played_color: None,
+            played_material_index: None,
         })
     };
 

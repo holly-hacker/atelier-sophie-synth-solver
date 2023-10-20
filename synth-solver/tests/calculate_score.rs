@@ -50,7 +50,7 @@ fn test_calculation() {
         .place(&materials, (0, 1), placement4, true, &mut scores)
         .unwrap();
 
-    let coverage = cauldron.calculate_coverage();
+    let coverage = cauldron.calculate_coverage(&materials);
     assert_eq!(coverage.get_color_ratio(Color::Red, &cauldron), 0.);
     assert_eq!(coverage.get_color_ratio(Color::Blue, &cauldron), 0.);
     assert_eq!(coverage.get_color_ratio(Color::Green, &cauldron), 0.);

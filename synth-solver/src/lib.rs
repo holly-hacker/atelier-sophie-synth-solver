@@ -73,7 +73,7 @@ pub struct Tile {
     /// The effect of this tile depends on the cauldron itself.
     pub level: u32,
     /// The color that was played here
-    pub played_color: Option<Color>,
+    pub played_material_index: Option<(usize, usize)>,
 }
 
 /// An item that can be placed in the cauldron.

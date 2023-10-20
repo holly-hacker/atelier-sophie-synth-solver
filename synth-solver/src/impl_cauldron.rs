@@ -33,7 +33,7 @@ impl Cauldron {
         material_groups: &[Vec<Material>],
         score_sets: &[ColorScoreSet],
     ) -> ArrayVec<[u32; MAX_GOALS]> {
-        let coverage = self.calculate_coverage();
+        let coverage = self.calculate_coverage(material_groups);
 
         let scores = score_sets
             .iter()
@@ -67,14 +67,14 @@ impl Cauldron {
     pub fn place(
         &mut self,
         material_groups: &[Vec<Material>],
-        item_index: (usize, usize),
+        material_index: (usize, usize),
         placement: Placement,
         allow_overlap: bool,
         scores: &mut [ColorScoreSet],
     ) -> Result<(), SynthError> {
         debug_assert_eq!(material_groups.len(), scores.len());
 
-        let material = material_groups[item_index.0][item_index.1];
+        let material = material_groups[material_index.0][material_index.1];
         let shape = match placement.transformation {
             Some(transformation) => material.shape.apply_transformation(transformation),
             None => material.shape.normalize(),
@@ -95,14 +95,14 @@ impl Cauldron {
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .as_mut()
                     .expect("cannot place item on unavailable tile");
-                if tile.played_color.is_some() {
+                if tile.played_material_index.is_some() {
                     if allow_overlap {
                         todo!("implement tile overlap");
                     } else {
                         return Err(SynthError::DisallowedOverlap);
                     }
                 }
-                tile.played_color = Some(material.color);
+                tile.played_material_index = Some(material_index);
 
                 // TODO: this currently assumes a "Grandma's Cauldron"
                 // this means that matching colors give 50% bonus (rounded down) and tiles give 3/5/7 points
@@ -140,7 +140,7 @@ impl Cauldron {
 
             if let Some(tile) = tile {
                 // tiles that are already played cannot be updated
-                if tile.played_color.is_some() {
+                if tile.played_material_index.is_some() {
                     continue;
                 }
 
@@ -152,16 +152,17 @@ impl Cauldron {
         }
 
         // apply score now, after possible errors
-        *scores[item_index.0].get_mut(material.color) += score;
+        *scores[material_index.0].get_mut(material.color) += score;
 
         Ok(())
     }
 
-    pub fn calculate_coverage(&self) -> CoverageInfo {
+    pub fn calculate_coverage(&self, material_groups: &[Vec<Material>]) -> CoverageInfo {
         self.tiles
             .iter()
             .filter_map(|t| t.as_ref())
-            .filter_map(|t| t.played_color)
+            .filter_map(|t| t.played_material_index)
+            .map(|(i1, i2)| material_groups[i1][i2].color)
             .fold(CoverageInfo::default(), CoverageInfo::add_color)
     }
 }

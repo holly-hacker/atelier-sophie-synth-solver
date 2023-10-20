@@ -7,7 +7,7 @@ use egui::RichText;
 
 use synth_solver::{
     solver::{Move, SolverResult},
-    Cauldron,
+    Cauldron, Material,
 };
 
 use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
@@ -201,7 +201,7 @@ impl eframe::App for App {
                         render_move_list(ui, &self.cauldron, route);
 
                         // render playfield
-                        render_playfield(ui, &playfield);
+                        render_playfield(ui, &playfield, &self.input.materials);
                     });
                 }
             }
@@ -232,7 +232,7 @@ fn render_move_list(ui: &mut egui::Ui, cauldron: &Cauldron, route: &[Move]) {
     }
 }
 
-fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron) {
+fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron, materials: &[Vec<Material>]) {
     for row in 0..playfield.size {
         ui.horizontal(|ui| {
             for col in 0..playfield.size {
@@ -241,10 +241,11 @@ fn render_playfield(ui: &mut egui::Ui, playfield: &Cauldron) {
                     ui.label(RichText::new(" ").monospace());
                     continue;
                 };
-                let Some(color) = tile.played_color else {
+                let Some(material_index) = tile.played_material_index else {
                     ui.label(RichText::new(".").monospace());
                     continue;
                 };
+                let color = materials[material_index.0][material_index.1].color;
                 let color = synth_color_to_egui_color(color);
                 let text = RichText::new("x").color(color).monospace();
                 ui.label(text);
