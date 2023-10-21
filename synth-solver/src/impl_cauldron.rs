@@ -96,6 +96,7 @@ impl Cauldron {
                 // copy value to avoid borrow checker issues
                 let bonus_scores = self.bonus_scores;
                 let properties = self.properties;
+                let color = self.color;
 
                 let tile = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
@@ -120,9 +121,9 @@ impl Cauldron {
                     n => unreachable!("invalid tile level: {n}"),
                 };
 
-                // TODO: handle synergy bonus
-                if properties.contains(CauldronProperties::SYNERGY) {
-                    todo!("synergy bonus not implemented");
+                // handle synergy bonus
+                if material.color == color && properties.contains(CauldronProperties::SYNERGY) {
+                    score *= 1.5;
                 }
 
                 let material_index_before_placement = tile.played_material_index;
