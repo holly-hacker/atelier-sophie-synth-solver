@@ -7,6 +7,8 @@ use synth_solver::{tiles, Cauldron, CauldronProperties, Color, Tile};
 
 use crate::util::synth_color_to_egui_color;
 
+use super::color_button_group;
+
 pub struct CauldronComponent {
     cauldron: Cauldron,
 }
@@ -35,13 +37,30 @@ impl DerefMut for CauldronComponent {
 
 impl CauldronComponent {
     pub fn render(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Cauldron");
+        ui.horizontal(|ui| {
+            ui.heading("Cauldron");
 
-        // TODO: buttons to change size of the cauldron
+            // TODO: buttons to change size of the cauldron
+
+            color_button_group(ui, &mut self.cauldron.color);
+        });
+
+        let mut bool_checked = self
+            .cauldron
+            .properties
+            .contains(CauldronProperties::SYNERGY);
+
+        if ui.checkbox(&mut bool_checked, "Synergy").changed() {
+            self.cauldron
+                .properties
+                .set(CauldronProperties::SYNERGY, bool_checked);
+        }
 
         if ui.button("Clear cauldron").clicked() {
             self.cauldron = default_cauldron();
         }
+
+        ui.separator();
 
         // render playfield itself
         // rendering by row to prevent some layout issues

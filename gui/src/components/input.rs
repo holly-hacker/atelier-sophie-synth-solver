@@ -161,7 +161,7 @@ fn goals_input(ui: &mut egui::Ui, goals: &mut Vec<Goal>) {
     }
 }
 
-fn color_button_group(ui: &mut egui::Ui, input_color: &mut Color) {
+pub fn color_button_group(ui: &mut egui::Ui, input_color: &mut Color) {
     ui.horizontal(|ui| {
         for color in [
             Color::Red,
