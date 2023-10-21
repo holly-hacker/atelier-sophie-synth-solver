@@ -107,12 +107,18 @@ impl Cauldron {
                     return Err(SynthError::DisallowedOverlap);
                 }
 
+                let mut bonus_multiplier = 1.0;
+
                 // matching colors give a 50% bonus to bonus score
-                let bonus_multiplier = if material.color == tile.color {
-                    1.5
-                } else {
-                    1.
-                };
+                if material.color == tile.color {
+                    bonus_multiplier *= 1.5;
+                }
+
+                // the Synergy trait gives an additional 50% bonus when the tile color matches the cauldron color
+                if properties.contains(CauldronProperties::SYNERGY) && color == tile.color {
+                    bonus_multiplier *= 1.5;
+                }
+
                 score += match tile.level {
                     0 => 0.,
                     1 => bonus_scores.0 as f32 * bonus_multiplier,
@@ -120,11 +126,6 @@ impl Cauldron {
                     3 => bonus_scores.2 as f32 * bonus_multiplier,
                     n => unreachable!("invalid tile level: {n}"),
                 };
-
-                // handle synergy bonus
-                if material.color == color && properties.contains(CauldronProperties::SYNERGY) {
-                    score *= 1.5;
-                }
 
                 let material_index_before_placement = tile.played_material_index;
 
@@ -138,6 +139,7 @@ impl Cauldron {
                     for other_tile in self.tiles.iter_mut().filter_map(|t| t.as_mut()) {
                         if other_tile.played_material_index == Some(material_index) {
                             other_tile.played_material_index = None;
+                            debug_assert_eq!(other_tile.level, 0);
                         }
                     }
                 }

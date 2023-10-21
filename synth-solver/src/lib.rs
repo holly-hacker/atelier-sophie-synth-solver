@@ -132,7 +132,7 @@ pub struct Goal {
 /// Overlapped tiles are removed so the removed tiles don't count towards coverage.
 ///
 /// Coverage is later used to multiply the progress towards the goals.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct CoverageInfo {
     coverage: [u32; 5],
 }
