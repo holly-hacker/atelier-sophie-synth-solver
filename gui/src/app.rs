@@ -69,7 +69,6 @@ impl eframe::App for App {
         let results_pending = self.pending_search.is_some();
         let results_available = self.results.read().unwrap().is_some();
         let can_edit_input = !results_pending && !results_available;
-        debug_assert!(!results_available || !results_pending);
 
         egui::SidePanel::left("left panel").show(ctx, |ui| {
             ui.label(format!("zoom: {}x", ctx.pixels_per_point()));
