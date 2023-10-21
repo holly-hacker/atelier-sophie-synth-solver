@@ -90,6 +90,7 @@ impl Cauldron {
         }
 
         // apply the shape to the playfield and count score
+        let mut materials_to_remove = ArrayVec::<[_; 9]>::new();
         let mut score = 0.;
         for (shape_y, shape_x) in (0..Shape::HEIGHT).cartesian_product(0..Shape::WIDTH) {
             if shape.get(shape_x, shape_y) {
@@ -134,14 +135,7 @@ impl Cauldron {
 
                 if let Some(material_index) = material_index_before_placement {
                     debug_assert!(allow_overlap); // checked earlier
-
-                    // clear all tiles that have the old material index
-                    for other_tile in self.tiles.iter_mut().filter_map(|t| t.as_mut()) {
-                        if other_tile.played_material_index == Some(material_index) {
-                            other_tile.played_material_index = None;
-                            debug_assert_eq!(other_tile.level, 0);
-                        }
-                    }
+                    materials_to_remove.push(material_index);
                 }
             }
         }
@@ -172,6 +166,17 @@ impl Cauldron {
                 // tiles can only go up to level 3
                 if tile.level < 3 {
                     tile.level += 1;
+                }
+            }
+        }
+
+        // clear overlapped tiles. this should happen after incrementing neighbours because we don't want to increment
+        // tiles we removed a material from
+        for tile in self.tiles.iter_mut().filter_map(|t| t.as_mut()) {
+            if let Some(played_material_index) = tile.played_material_index {
+                if materials_to_remove.contains(&played_material_index) {
+                    tile.played_material_index = None;
+                    debug_assert_eq!(tile.level, 0);
                 }
             }
         }
