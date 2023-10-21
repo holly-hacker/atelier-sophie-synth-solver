@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 use eframe::epaint::Rounding;
 use egui::{Button, Color32, FontSelection, RichText, Vec2};
 
-use synth_solver::{tiles, Cauldron, Color, Tile};
+use synth_solver::{tiles, Cauldron, CauldronProperties, Color, Tile};
 
 use crate::util::synth_color_to_egui_color;
 
@@ -161,5 +161,8 @@ fn default_cauldron() -> Cauldron {
             W 0, W 0, W 0, W 0, W 0,
             W 0, W 0, W 0, W 0, W 0,
         ],
+        bonus_scores: (3, 5, 7),
+        color: Color::White,
+        properties: CauldronProperties::empty(),
     }
 }

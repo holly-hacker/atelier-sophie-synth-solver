@@ -1,16 +1,18 @@
 pub mod cauldron {
     use crate::*;
     pub fn uni_bag_5x5_bonus1() -> Cauldron {
-        // 5x5 cauldron with Bonus Display Level 1
         Cauldron {
             size: 5,
             tiles: tiles![
-            B 0, G 0, Y 0, Y 0, W 0,
-            W 0, Y 0, Y 0, Y 0, Y 1,
-            R 0, Y 0, R 1, R 0, Y 0,
-            R 0, Y 0, R 0, R 0, Y 1,
-            W 0, Y 2, Y 0, Y 0, Y 0,
+                B 0, G 0, Y 0, Y 0, W 0,
+                W 0, Y 0, Y 0, Y 0, Y 1,
+                R 0, Y 0, R 1, R 0, Y 0,
+                R 0, Y 0, R 0, R 0, Y 1,
+                W 0, Y 2, Y 0, Y 0, Y 0,
             ],
+            bonus_scores: (3, 5, 7),
+            color: Color::White,
+            properties: CauldronProperties::empty(),
         }
     }
 }

@@ -16,7 +16,6 @@ fn test_calculation() {
         )],
     ];
 
-    // TODO: capabilities. currently using Grandma's Cauldron which gives 0/3/5/7
     let mut cauldron = Cauldron {
         size: 5,
         tiles: tiles![
@@ -26,6 +25,9 @@ fn test_calculation() {
             R 0, Y 0, R 0, R 0, Y 1,
             W 0, Y 2, Y 0, Y 0, Y 0,
         ],
+        bonus_scores: (3, 5, 7),
+        color: Color::White,
+        properties: CauldronProperties::empty(),
     };
 
     let mut scores = vec![ColorScoreSet::default(); materials.len()];
@@ -77,6 +79,9 @@ fn test_overlap() {
             W 0, W 0, W 0, W 0,
             W 0, W 0, W 0, W 0,
         ],
+        bonus_scores: (3, 5, 7),
+        color: Color::White,
+        properties: CauldronProperties::empty(),
     };
 
     let mut scores = vec![ColorScoreSet::default(); materials.len()];

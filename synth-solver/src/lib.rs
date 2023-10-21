@@ -53,6 +53,21 @@ pub struct Cauldron {
     pub size: usize,
     /// The individual tiles of a cauldron, or None if the tile is a hole.
     pub tiles: tinyvec::ArrayVec<[Option<Tile>; 6 * 6]>, // TODO: maybe use const generic? size should be 4x4, 5x5 or 6x6
+    /// The bonus scores for each level of a tile.
+    pub bonus_scores: (u32, u32, u32),
+    /// The color of the item being crafted. This is used when this cauldron has the [`CauldronProperties::SYNERGY`] property.
+    pub color: Color,
+    /// The properties of the cauldron.
+    pub properties: CauldronProperties,
+}
+
+bitflags::bitflags! {
+    /// Optional properties for the cauldron that change how score may be calculated.
+    #[derive(Copy, Clone, Default)]
+    pub struct CauldronProperties: u32 {
+        /// Obtaining bonusses that are the same color as the liquid in the cauldron increases by 50%.
+        const SYNERGY = 0b001;
+    }
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]

@@ -93,6 +93,10 @@ impl Cauldron {
         let mut score = 0.;
         for (shape_y, shape_x) in (0..Shape::HEIGHT).cartesian_product(0..Shape::WIDTH) {
             if shape.get(shape_x, shape_y) {
+                // copy value to avoid borrow checker issues
+                let bonus_scores = self.bonus_scores;
+                let properties = self.properties;
+
                 let tile = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .as_mut()
@@ -102,20 +106,24 @@ impl Cauldron {
                     return Err(SynthError::DisallowedOverlap);
                 }
 
-                // TODO: this currently assumes a "Grandma's Cauldron"
-                // this means that matching colors give 50% bonus (rounded down) and tiles give 3/5/7 points
-                let bonus = if material.color == tile.color {
+                // matching colors give a 50% bonus to bonus score
+                let bonus_multiplier = if material.color == tile.color {
                     1.5
                 } else {
                     1.
                 };
                 score += match tile.level {
                     0 => 0.,
-                    1 => 3. * bonus,
-                    2 => 5. * bonus,
-                    3 => 7. * bonus,
+                    1 => bonus_scores.0 as f32 * bonus_multiplier,
+                    2 => bonus_scores.1 as f32 * bonus_multiplier,
+                    3 => bonus_scores.2 as f32 * bonus_multiplier,
                     n => unreachable!("invalid tile level: {n}"),
                 };
+
+                // TODO: handle synergy bonus
+                if properties.contains(CauldronProperties::SYNERGY) {
+                    todo!("synergy bonus not implemented");
+                }
 
                 let material_index_before_placement = tile.played_material_index;
 
