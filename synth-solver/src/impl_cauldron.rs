@@ -99,10 +99,12 @@ impl Cauldron {
                 let properties = self.properties;
                 let color = self.color;
 
-                let tile = self
+                let Some(tile) = self
                     .get_tile_mut((placement_x + shape_x, placement_y + shape_y))
                     .as_mut()
-                    .expect("cannot place item on unavailable tile");
+                else {
+                    return Err(SynthError::UnavailableTile);
+                };
 
                 if tile.played_material_index.is_some() && !allow_overlap {
                     return Err(SynthError::DisallowedOverlap);

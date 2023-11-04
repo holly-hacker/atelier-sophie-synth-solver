@@ -5,19 +5,24 @@ use std::{
 
 #[derive(Debug)]
 pub enum SynthError {
-    /// A tile was placed out of bounds
+    /// A material was placed out of bounds
     OutOfBounds,
-    /// A tile was placed on top of another tile while it is disallowed
+    /// A material was placed on top of another material while it is disallowed
     DisallowedOverlap,
+    UnavailableTile,
 }
 
 impl Display for SynthError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::OutOfBounds => write!(f, "A tile was placed out of bounds"),
+            Self::OutOfBounds => write!(f, "A material was placed out of bounds"),
             Self::DisallowedOverlap => write!(
                 f,
-                "A tile was placed on top of another tile while it is disallowed"
+                "A material was placed on top of another material while it is disallowed"
+            ),
+            Self::UnavailableTile => write!(
+                f,
+                "A material was placed on an unavailable tile (ie. a hole)"
             ),
         }
     }
