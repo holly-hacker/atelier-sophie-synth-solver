@@ -5,15 +5,13 @@ use egui::{Button, Color32, FontSelection, RichText, Vec2};
 
 use synth_solver::{tiles, Cauldron, CauldronProperties, Color, Tile};
 
-use crate::util::synth_color_to_egui_color;
+use crate::{components::color_button_group, util::synth_color_to_egui_color};
 
-use super::color_button_group;
-
-pub struct CauldronComponent {
+pub struct CauldronSection {
     cauldron: Cauldron,
 }
 
-impl Default for CauldronComponent {
+impl Default for CauldronSection {
     fn default() -> Self {
         Self {
             cauldron: default_cauldron(),
@@ -21,7 +19,7 @@ impl Default for CauldronComponent {
     }
 }
 
-impl Deref for CauldronComponent {
+impl Deref for CauldronSection {
     type Target = Cauldron;
 
     fn deref(&self) -> &Self::Target {
@@ -29,13 +27,13 @@ impl Deref for CauldronComponent {
     }
 }
 
-impl DerefMut for CauldronComponent {
+impl DerefMut for CauldronSection {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.cauldron
     }
 }
 
-impl CauldronComponent {
+impl CauldronSection {
     pub fn render(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.heading("Cauldron");
@@ -45,15 +43,15 @@ impl CauldronComponent {
             color_button_group(ui, &mut self.cauldron.color);
         });
 
-        let mut bool_checked = self
+        let mut synergy_enabled = self
             .cauldron
             .properties
             .contains(CauldronProperties::SYNERGY);
 
-        if ui.checkbox(&mut bool_checked, "Synergy").changed() {
+        if ui.checkbox(&mut synergy_enabled, "Synergy").changed() {
             self.cauldron
                 .properties
-                .set(CauldronProperties::SYNERGY, bool_checked);
+                .set(CauldronProperties::SYNERGY, synergy_enabled);
         }
 
         if ui.button("Clear cauldron").clicked() {

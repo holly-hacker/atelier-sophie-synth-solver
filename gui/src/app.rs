@@ -10,8 +10,8 @@ use synth_solver::{
     Cauldron, Material,
 };
 
-use crate::components::{CauldronComponent, InputComponent, SolverSettingsComponent};
-use crate::util::synth_color_to_egui_color;
+use crate::{components::InputComponent, sections::SolverSettingsComponent};
+use crate::{sections::CauldronSection, util::synth_color_to_egui_color};
 
 struct AtomicF32(AtomicU32);
 
@@ -37,7 +37,7 @@ struct PendingSearch {
 }
 
 pub struct App {
-    cauldron: CauldronComponent,
+    cauldron: CauldronSection,
     input: InputComponent,
     settings: SolverSettingsComponent,
     results: Arc<RwLock<Option<SolverResult>>>,
@@ -48,7 +48,7 @@ impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         cc.egui_ctx.set_pixels_per_point(1.5);
         Self {
-            cauldron: CauldronComponent::default(),
+            cauldron: CauldronSection::default(),
             input: Default::default(),
             settings: Default::default(),
             results: Arc::new(RwLock::new(None)),
@@ -100,8 +100,8 @@ impl eframe::App for App {
                     if ui.button("Run solver").clicked() {
                         let cloned_ctx = ctx.clone();
                         let cauldron = self.cauldron.clone();
-                        let materials = self.input.materials.clone();
-                        let goals = self.input.goals.clone();
+                        let materials = self.input.materials_input.materials.clone();
+                        let goals = self.input.goals_input.goals.clone();
                         let settings = self.settings.props.clone();
 
                         let (results_send, results_recv) = oneshot::channel();
@@ -176,15 +176,14 @@ impl eframe::App for App {
                     // calculate the playfield after these moves
                     let mut playfield = self.cauldron.clone();
                     let res = playfield.place_all(
-                        &self.input.materials,
+                        &self.input.materials_input.materials,
                         route,
                         self.settings.props.allow_overlaps,
                     );
 
                     let scores = match res {
-                        Ok(scores) => {
-                            playfield.calculate_final_score(&self.input.materials, &scores)
-                        }
+                        Ok(scores) => playfield
+                            .calculate_final_score(&self.input.materials_input.materials, &scores),
                         Err(e) => {
                             ui.label(format!("Error: {e:?}"));
                             continue;
@@ -200,7 +199,7 @@ impl eframe::App for App {
                         render_move_list(ui, &self.cauldron, route);
 
                         // render playfield
-                        render_playfield(ui, &playfield, &self.input.materials);
+                        render_playfield(ui, &playfield, &self.input.materials_input.materials);
                     });
                 }
             }

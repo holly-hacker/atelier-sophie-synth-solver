@@ -2,6 +2,7 @@
 
 mod app;
 mod components;
+pub mod sections;
 mod util;
 
 fn main() -> eframe::Result<()> {
