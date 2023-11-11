@@ -15,7 +15,7 @@ impl MaterialInputSection {
         for (group_idx, material_group) in self.materials.iter_mut().enumerate() {
             ui.push_id(group_idx, |ui| {
                 ui.group(|ui| {
-                    ui.label(RichText::new(format!("Material Group {}", group_idx + 1)).raised());
+                    ui.label(RichText::new(format!("Material Group {}", group_idx + 1)));
                     materials_group_input(ui, material_group);
                     ui.horizontal(|ui| {
                         if ui.button("Add Material").clicked() {

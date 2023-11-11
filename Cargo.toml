@@ -1,5 +1,5 @@
 [workspace]
-members = ["synth-solver", "gui"]
+members = ["synth-solver", "atelier-sophie-data", "gui"]
 resolver = "2"
 
 [profile.dev]

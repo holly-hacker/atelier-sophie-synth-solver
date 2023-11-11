@@ -1,0 +1,3 @@
+[submodule "atelier-data"]
+	path = atelier-data
+	url = https://github.com/holly-hacker/atelier-data.git

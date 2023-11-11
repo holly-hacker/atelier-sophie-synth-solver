@@ -19,6 +19,14 @@ impl Shape {
         _ = Self(0).get_neighbours();
     }
 
+    pub fn from_indices(iter: impl Iterator<Item = usize>) -> Self {
+        let mut bits = 0;
+        for index in iter {
+            bits |= 1 << index;
+        }
+        Self(bits)
+    }
+
     pub fn from_binary(arr: [u8; 3]) -> Self {
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);
@@ -215,7 +223,7 @@ impl Shape {
         }
     }
 
-    fn to_braille(self) -> String {
+    pub fn to_braille(self) -> String {
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);
 

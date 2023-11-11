@@ -1,9 +1,9 @@
 mod cauldron_input;
-mod goals_input;
-mod material_input;
-mod search_settings;
+mod cauldron_preview;
+mod item_input;
+mod materials_input;
 
-pub use cauldron_input::CauldronSection;
-pub use goals_input::GoalsInputSection;
-pub use material_input::MaterialInputSection;
-pub use search_settings::SolverSettingsComponent;
+pub use cauldron_input::CauldronInputSection;
+pub use cauldron_preview::CauldronPreview;
+pub use item_input::TargetItemInputSection;
+pub use materials_input::MaterialsInputSection;

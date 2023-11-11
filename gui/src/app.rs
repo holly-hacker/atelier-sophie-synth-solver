@@ -6,12 +6,15 @@ use std::sync::{
 use egui::RichText;
 
 use synth_solver::{
-    solver::{Move, SolverResult},
+    solver::{GoalResult, Move, SolverResult},
     Cauldron, Material,
 };
 
-use crate::{components::InputComponent, sections::SolverSettingsComponent};
-use crate::{sections::CauldronSection, util::synth_color_to_egui_color};
+use crate::{
+    sections::CauldronInputSection,
+    util::{create_goals, create_materials, create_solver_settings, synth_color_to_egui_color},
+};
+use crate::{sections::*, util::create_synth_cauldron};
 
 struct AtomicF32(AtomicU32);
 
@@ -37,9 +40,11 @@ struct PendingSearch {
 }
 
 pub struct App {
-    cauldron: CauldronSection,
-    input: InputComponent,
-    settings: SolverSettingsComponent,
+    // inputs
+    cauldron_input: CauldronInputSection,
+    item_input: TargetItemInputSection,
+    materials_input: MaterialsInputSection,
+
     results: Arc<RwLock<Option<SolverResult>>>,
     pending_search: Option<PendingSearch>,
 }
@@ -48,12 +53,86 @@ impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         cc.egui_ctx.set_pixels_per_point(1.5);
         Self {
-            cauldron: CauldronSection::default(),
-            input: Default::default(),
-            settings: Default::default(),
+            cauldron_input: CauldronInputSection::default(),
+            item_input: TargetItemInputSection::default(),
+            materials_input: MaterialsInputSection::default(),
+
             results: Arc::new(RwLock::new(None)),
             pending_search: None,
         }
+    }
+
+    fn run_solver(&mut self, ctx: egui::Context) {
+        let allow_overlaps = true; // TODO: make this configurable
+
+        let cauldron = create_synth_cauldron(&self.cauldron_input, &self.item_input);
+        let materials = create_materials(&self.materials_input);
+        let goals = create_goals(&self.item_input);
+        let settings = create_solver_settings(&self.cauldron_input, allow_overlaps);
+
+        let (results_send, results_recv) = oneshot::channel();
+        let cancelled = Arc::new(AtomicBool::new(false));
+        let progress_val = Arc::new(AtomicF32::new(0.));
+        let results = self.results.clone();
+
+        self.pending_search = Some(PendingSearch {
+            results_receiver: results_recv,
+            cancelled: cancelled.clone(),
+            current_progress: progress_val.clone(),
+        });
+
+        std::thread::spawn(move || {
+            let found_routes = synth_solver::solver::find_optimal_routes(
+                &cauldron,
+                &materials,
+                &goals,
+                &settings,
+                Some(Box::new(move |progress, temp_results| {
+                    progress_val.set(progress);
+                    *results.write().unwrap() = Some(temp_results);
+
+                    if cancelled.load(std::sync::atomic::Ordering::Relaxed) {
+                        return std::ops::ControlFlow::Break(());
+                    }
+
+                    // for now, don't stop the search
+                    std::ops::ControlFlow::Continue(())
+                })),
+            );
+            println!("Found {} routes", found_routes.len());
+            results_send.send(found_routes).unwrap();
+            ctx.request_repaint();
+        });
+    }
+
+    fn render_route(&self, ui: &mut egui::Ui, goal_result: &GoalResult, route: &[Move]) {
+        // calculate the playfield after these moves
+        let allow_overlaps = true; // TODO derive from UI?
+
+        let mut cauldron = create_synth_cauldron(&self.cauldron_input, &self.item_input);
+        let materials = create_materials(&self.materials_input);
+
+        let res = cauldron.place_all(&materials, route, allow_overlaps);
+
+        let scores = match res {
+            Ok(scores) => cauldron.calculate_final_score(&materials, &scores),
+            Err(e) => {
+                ui.label(format!("Error: {e:?}"));
+                return;
+            }
+        };
+
+        egui::CollapsingHeader::new(format!(
+            "Goals: {:?}, score: {:?}",
+            goal_result.achieved_goals, scores
+        ))
+        .show(ui, |ui| {
+            // render move list
+            render_move_list(ui, &cauldron, route);
+
+            // render playfield
+            render_playfield(ui, &cauldron, &materials);
+        });
     }
 }
 
@@ -86,57 +165,24 @@ impl eframe::App for App {
             ui.add_space(8.);
 
             ui.add_enabled_ui(can_edit_input, |ui| {
-                self.input.render(ui);
+                self.item_input.render(ui);
                 ui.add_space(16.);
-                self.settings.render(ui);
+                self.materials_input
+                    .render(ui, self.item_input.target_item_tag);
                 ui.add_space(16.);
             });
 
-            if let Err(err) = self.input.validate() {
+            if let Err(err) = self
+                .item_input
+                .validate()
+                .and_then(|()| self.materials_input.validate())
+            {
                 ui.label("Input error");
                 ui.label(err);
             } else {
                 ui.add_enabled_ui(can_edit_input, |ui| {
                     if ui.button("Run solver").clicked() {
-                        let cloned_ctx = ctx.clone();
-                        let cauldron = self.cauldron.clone();
-                        let materials = self.input.materials_input.materials.clone();
-                        let goals = self.input.goals_input.goals.clone();
-                        let settings = self.settings.props.clone();
-
-                        let (results_send, results_recv) = oneshot::channel();
-                        let cancelled = Arc::new(AtomicBool::new(false));
-                        let progress_val = Arc::new(AtomicF32::new(0.));
-                        let results = self.results.clone();
-
-                        self.pending_search = Some(PendingSearch {
-                            results_receiver: results_recv,
-                            cancelled: cancelled.clone(),
-                            current_progress: progress_val.clone(),
-                        });
-
-                        std::thread::spawn(move || {
-                            let found_routes = synth_solver::solver::find_optimal_routes(
-                                &cauldron,
-                                &materials,
-                                &goals,
-                                &settings,
-                                Some(Box::new(move |progress, temp_results| {
-                                    progress_val.set(progress);
-                                    *results.write().unwrap() = Some(temp_results);
-
-                                    if cancelled.load(std::sync::atomic::Ordering::Relaxed) {
-                                        return std::ops::ControlFlow::Break(());
-                                    }
-
-                                    // for now, don't stop the search
-                                    std::ops::ControlFlow::Continue(())
-                                })),
-                            );
-                            println!("Found {} routes", found_routes.len());
-                            results_send.send(found_routes).unwrap();
-                            cloned_ctx.request_repaint();
-                        });
+                        self.run_solver(ctx.clone());
                     }
                 });
 
@@ -173,41 +219,18 @@ impl eframe::App for App {
             ui.heading("Results");
             if let Some(routes) = self.results.read().unwrap().as_ref() {
                 for (goal_result, route) in routes {
-                    // calculate the playfield after these moves
-                    let mut playfield = self.cauldron.clone();
-                    let res = playfield.place_all(
-                        &self.input.materials_input.materials,
-                        route,
-                        self.settings.props.allow_overlaps,
-                    );
-
-                    let scores = match res {
-                        Ok(scores) => playfield
-                            .calculate_final_score(&self.input.materials_input.materials, &scores),
-                        Err(e) => {
-                            ui.label(format!("Error: {e:?}"));
-                            continue;
-                        }
-                    };
-
-                    egui::CollapsingHeader::new(format!(
-                        "Goals: {:?}, score: {:?}",
-                        goal_result.achieved_goals, scores
-                    ))
-                    .show(ui, |ui| {
-                        // render move list
-                        render_move_list(ui, &self.cauldron, route);
-
-                        // render playfield
-                        render_playfield(ui, &playfield, &self.input.materials_input.materials);
-                    });
+                    self.render_route(ui, goal_result, route);
                 }
             }
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.add_enabled_ui(can_edit_input, |ui| {
-                self.cauldron.render(ui);
+                self.cauldron_input.render(ui);
+                ui.separator();
+
+                let cauldron = create_synth_cauldron(&self.cauldron_input, &self.item_input);
+                CauldronPreview { cauldron }.render(ui);
             });
         });
     }

@@ -66,8 +66,16 @@ bitflags::bitflags! {
     /// Optional properties for the cauldron that change how score may be calculated.
     #[derive(Copy, Clone, Default)]
     pub struct CauldronProperties: u32 {
-        /// Obtaining bonusses that are the same color as the liquid in the cauldron increases by 50%.
+        /// Obtaining bonuses that are the same color as the liquid in the cauldron increases effect by 50%.
         const SYNERGY = 0b001;
+        /// Obtaining bonuses that are the same color as materials already placed causes those materials to gain the same bonus.
+        const TUNING = 0b010;
+        /// When a material is placed, the Synthesis bonuses in all 8 directions around it become the same color.
+        const COLOR_SURROUNDINGS = 0b100;
+
+        /// This cauldron has "Synergy", "Tuning", "Time Limit", and "Color Surroundings" effects.
+        const COMBINED_EFFECT = Self::SYNERGY.bits() | Self::TUNING.bits() | Self::COLOR_SURROUNDINGS.bits();
+        // TODO: true combined effect
     }
 }
 

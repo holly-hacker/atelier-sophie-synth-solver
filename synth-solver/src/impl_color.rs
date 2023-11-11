@@ -21,4 +21,15 @@ impl Color {
             n => panic!("Invalid color index {n}"),
         }
     }
+
+    pub fn from_mat_color_tag(tag: &str) -> Self {
+        match tag {
+            "ITEM_MAT_COLOR_RED" => Self::Red,
+            "ITEM_MAT_COLOR_BLUE" => Self::Blue,
+            "ITEM_MAT_COLOR_GREEN" => Self::Green,
+            "ITEM_MAT_COLOR_YELLOW" => Self::Yellow,
+            "ITEM_MAT_COLOR_WHITE" => Self::White,
+            _ => panic!("Invalid color tag {tag}"),
+        }
+    }
 }
