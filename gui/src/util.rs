@@ -128,8 +128,8 @@ fn create_tiles(
                 row_col.chars().skip(0).take(0),
                 row_bonus.chars().skip(0).take(0),
             ),
-            (..=3 | 6..=usize::MAX, _) => panic!("Invalid size {} for item {}", size, item),
-            (_, _) => panic!("Invalid y {} for item {}", y, item),
+            (..=3 | 6..=usize::MAX, _) => panic!("Invalid size {size} for item {item}"),
+            (_, _) => panic!("Invalid y {y} for item {item}"),
         })
         .map(|(color, bonus)| {
             if color != ' ' {
@@ -161,5 +161,5 @@ fn create_tiles(
 
 fn create_shape(shape_tag: &str, size: usize) -> synth_solver::Shape {
     let shape = atelier_sophie_data::SHAPES.get(shape_tag).unwrap();
-    synth_solver::Shape::from_indices(shape.iter().take(size).cloned())
+    synth_solver::Shape::from_indices(shape.iter().take(size).copied())
 }

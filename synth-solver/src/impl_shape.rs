@@ -83,6 +83,7 @@ impl Shape {
         })[self.0 as usize]
     }
 
+    #[must_use]
     pub fn apply_transformation(self, transformation: Transformation) -> Self {
         self.apply_raw_transformation(transformation).normalize()
     }
@@ -131,6 +132,7 @@ impl Shape {
     }
 
     /// Normalize a shape by aligning it to the top left corner.
+    #[must_use]
     pub fn normalize(mut self) -> Self {
         debug_assert_eq!(Self::WIDTH, 3);
         debug_assert_eq!(Self::HEIGHT, 3);

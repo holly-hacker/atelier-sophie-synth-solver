@@ -114,8 +114,8 @@ impl MaterialsInputSection {
     }
 
     pub fn validate(&self) -> Result<(), String> {
-        for group in self.item_groups.iter() {
-            for material in group.materials.iter() {
+        for group in &self.item_groups {
+            for material in &group.materials {
                 if material.item_tag.is_none() {
                     return Err(format!(
                         "Material group {} has an empty item",
@@ -154,7 +154,7 @@ fn render_input_shape_index(ui: &mut egui::Ui, shape_tag: &str, size: &mut usize
     let shape = atelier_sophie_data::SHAPES
         .get(shape_tag)
         .expect("find shape");
-    let shape = synth_solver::Shape::from_indices(shape.iter().take(*size).cloned()).normalize();
+    let shape = synth_solver::Shape::from_indices(shape.iter().take(*size).copied()).normalize();
     let shape = shape.to_matrix();
 
     // Shape view
@@ -164,9 +164,9 @@ fn render_input_shape_index(ui: &mut egui::Ui, shape_tag: &str, size: &mut usize
         let old_spacing = ui.style().spacing.item_spacing;
         ui.style_mut().spacing.item_spacing = egui::Vec2::ZERO;
         ui.vertical(|ui| {
-            for row in shape.iter() {
+            for row in &shape {
                 ui.horizontal(|ui| {
-                    for cell in row.iter() {
+                    for cell in row {
                         ui.add_enabled(false, egui::Checkbox::new(&mut (cell.clone()), ""));
                     }
                 });

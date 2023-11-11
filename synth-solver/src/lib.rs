@@ -1,4 +1,12 @@
-#![warn(clippy::trivially_copy_pass_by_ref, clippy::use_self)]
+#![warn(
+    clippy::cloned_instead_of_copied,
+    clippy::explicit_iter_loop,
+    clippy::return_self_not_must_use,
+    clippy::trivially_copy_pass_by_ref,
+    clippy::uninlined_format_args,
+    clippy::use_self
+)]
+#![allow(clippy::wildcard_imports)]
 
 pub use tinyvec;
 

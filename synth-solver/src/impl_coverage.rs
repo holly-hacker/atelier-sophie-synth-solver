@@ -1,6 +1,7 @@
 use crate::*;
 
 impl CoverageInfo {
+    #[must_use]
     pub fn add_color(mut self, color: Color) -> Self {
         self.coverage[color.get_index()] += 1;
         self
