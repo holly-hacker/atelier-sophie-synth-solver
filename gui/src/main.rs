@@ -15,8 +15,9 @@ mod util;
 
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {
-        initial_window_size: Some([640.0 * 1.5, 480.0 * 1.5].into()),
-        min_window_size: Some([300.0, 220.0].into()),
+        viewport: egui::ViewportBuilder::default()
+            .with_min_inner_size([300.0, 220.0])
+            .with_inner_size([640.0 * 1.5, 480.0 * 1.5]),
         ..Default::default()
     };
     eframe::run_native(
